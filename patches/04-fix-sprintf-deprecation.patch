@@ -1,0 +1,4391 @@
+diff -Naur live.step3/groupsock/Groupsock.cpp live/groupsock/Groupsock.cpp
+--- live.step3/groupsock/Groupsock.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/groupsock/Groupsock.cpp	2025-11-30 15:11:43.585059962 +0900
+@@ -425,7 +425,7 @@
+     // Make sure the "sock" parameter is in bounds:
+     if (sock < 0) {
+       char buf[100];
+-      sprintf(buf, "trying to use bad socket (%d)", sock);
++      snprintf(buf, sizeof(buf), "trying to use bad socket (%d)", sock);
+       env.setResultMsg(buf);
+       break;
+     }
+@@ -437,7 +437,7 @@
+       = (sockets->Lookup((char*)(long)sock) != 0);
+     if (alreadyExists) {
+       char buf[100];
+-      sprintf(buf, "Attempting to replace an existing socket (%d)", sock);
++      snprintf(buf, sizeof(buf), "Attempting to replace an existing socket (%d)", sock);
+       env.setResultMsg(buf);
+       break;
+     }
+diff -Naur live.step3/groupsock/GroupsockHelper.cpp live/groupsock/GroupsockHelper.cpp
+--- live.step3/groupsock/GroupsockHelper.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/groupsock/GroupsockHelper.cpp	2025-11-30 15:11:43.586059979 +0900
+@@ -167,7 +167,7 @@
+       MAKE_SOCKADDR_IN(name, addr, port.num());
+       if (bind(newSocket, (struct sockaddr*)&name, sizeof name) != 0) {
+ 	char tmpBuffer[100];
+-	sprintf(tmpBuffer, "IPv4 bind() error (port number: %d): ", ntohs(port.num()));
++	snprintf(tmpBuffer, sizeof(tmpBuffer), "IPv4 bind() error (port number: %d): ", ntohs(port.num()));
+ 	socketErr(env, tmpBuffer);
+ 	closeSocket(newSocket);
+ 	return -1;
+@@ -187,7 +187,7 @@
+       MAKE_SOCKADDR_IN6(name, addr, port.num());
+       if (bind(newSocket, (struct sockaddr*)&name, sizeof name) != 0) {
+ 	char tmpBuffer[100];
+-	sprintf(tmpBuffer, "IPv6 bind() error (port number: %d): ", ntohs(port.num()));
++	snprintf(tmpBuffer, sizeof(tmpBuffer), "IPv6 bind() error (port number: %d): ", ntohs(port.num()));
+ 	socketErr(env, tmpBuffer);
+ 	closeSocket(newSocket);
+ 	return -1;
+@@ -339,7 +339,7 @@
+       MAKE_SOCKADDR_IN(name, ReceivingInterfaceAddr, port.num());
+       if (bind(newSocket, (struct sockaddr*)&name, sizeof name) != 0) {
+ 	char tmpBuffer[100];
+-	sprintf(tmpBuffer, "IPv4 bind() error (port number: %d): ", ntohs(port.num()));
++	snprintf(tmpBuffer, sizeof(tmpBuffer), "IPv4 bind() error (port number: %d): ", ntohs(port.num()));
+ 	socketErr(env, tmpBuffer);
+ 	closeSocket(newSocket);
+ 	return -1;
+@@ -358,7 +358,7 @@
+       MAKE_SOCKADDR_IN6(name, ReceivingInterfaceAddr6, port.num());
+       if (bind(newSocket, (struct sockaddr*)&name, sizeof name) != 0) {
+ 	char tmpBuffer[100];
+-	sprintf(tmpBuffer, "IPv6 bind() error (port number: %d): ", ntohs(port.num()));
++	snprintf(tmpBuffer, sizeof(tmpBuffer), "IPv6 bind() error (port number: %d): ", ntohs(port.num()));
+ 	socketErr(env, tmpBuffer);
+ 	closeSocket(newSocket);
+ 	return -1;
+@@ -453,7 +453,7 @@
+ 			   (struct sockaddr const*)&addressAndPort, dest_len);
+     if (bytesSent != (int)bufferSize) {
+       char tmpBuf[100];
+-      sprintf(tmpBuf, "writeSocket(%d), sendTo() error: wrote %d bytes instead of %u: ", socket, bytesSent, bufferSize);
++      snprintf(tmpBuf, sizeof(tmpBuf), "writeSocket(%d), sendTo() error: wrote %d bytes instead of %u: ", socket, bytesSent, bufferSize);
+       socketErr(env, tmpBuf);
+       break;
+     }
+@@ -990,7 +990,7 @@
+   time_t tvNow_t = tvNow.tv_sec;
+   char const* ctimeResult = ctime(&tvNow_t);
+   if (ctimeResult == NULL) {
+-    sprintf(timeString, "??:??:??");
++    snprintf(timeString, sizeof(timeString), "??:??:??");
+   } else {
+     char const* from = &ctimeResult[11];
+     int i;
+diff -Naur live.step3/groupsock/NetAddress.cpp live/groupsock/NetAddress.cpp
+--- live.step3/groupsock/NetAddress.cpp	2025-11-30 15:20:51.572777412 +0900
++++ live/groupsock/NetAddress.cpp	2025-11-30 15:11:52.711221093 +0900
+@@ -476,7 +476,7 @@
+     }
+     default: {
+       fVal = new char[200]; // more than enough for this error message
+-      sprintf(fVal, "(unknown address family %d)", addr.ss_family);
++      snprintf(fVal, 200, "(unknown address family %d)", addr.ss_family);
+       break;
+     }
+   }
+diff -Naur live.step3/hlsProxy/live555HLSProxy.cpp live/hlsProxy/live555HLSProxy.cpp
+--- live.step3/hlsProxy/live555HLSProxy.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/hlsProxy/live555HLSProxy.cpp	2025-11-30 15:11:43.586059979 +0900
+@@ -464,7 +464,7 @@
+   if (ourM3U8FileName == NULL) {
+     ourM3U8FileName = new char[strlen(hlsPrefix) + 5/*strlen(".m3u8")*/ + 1];
+     if (ourM3U8FileName == NULL) exit(1);
+-    sprintf(ourM3U8FileName, "%s.m3u8", hlsPrefix);
++    snprintf(ourM3U8FileName, sizeof(ourM3U8FileName), "%s.m3u8", hlsPrefix);
+   }
+ 
+   // Open our ".m3u8" file for output, and write the prefix:
+diff -Naur live.step3/liveMedia/ADTSAudioFileSource.cpp live/liveMedia/ADTSAudioFileSource.cpp
+--- live.step3/liveMedia/ADTSAudioFileSource.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/ADTSAudioFileSource.cpp	2025-11-30 15:11:43.586059979 +0900
+@@ -105,7 +105,7 @@
+   u_int8_t const audioObjectType = profile + 1;
+   audioSpecificConfig[0] = (audioObjectType<<3) | (samplingFrequencyIndex>>1);
+   audioSpecificConfig[1] = (samplingFrequencyIndex<<7) | (channelConfiguration<<3);
+-  sprintf(fConfigStr, "%02X%02X", audioSpecificConfig[0], audioSpecificConfig[1]);
++  snprintf(fConfigStr, sizeof(fConfigStr), "%02X%02X", audioSpecificConfig[0], audioSpecificConfig[1]);
+ }
+ 
+ ADTSAudioFileSource::~ADTSAudioFileSource() {
+diff -Naur live.step3/liveMedia/AMRAudioFileSink.cpp live/liveMedia/AMRAudioFileSink.cpp
+--- live.step3/liveMedia/AMRAudioFileSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/AMRAudioFileSink.cpp	2025-11-30 15:11:43.586059979 +0900
+@@ -73,7 +73,7 @@
+     // This header is defined in RFC 4867, section 5.
+     // (However, we don't do this if we're creating one file per frame.)
+     char headerBuffer[100];
+-    sprintf(headerBuffer, "#!AMR%s%s\n",
++    snprintf(headerBuffer, sizeof(headerBuffer), "#!AMR%s%s\n",
+ 	    source->isWideband() ? "-WB" : "",
+ 	    source->numChannels() > 1 ? "_MC1.0" : "");
+     unsigned headerLength = strlen(headerBuffer);
+diff -Naur live.step3/liveMedia/AMRAudioRTPSink.cpp live/liveMedia/AMRAudioRTPSink.cpp
+--- live.step3/liveMedia/AMRAudioRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/AMRAudioRTPSink.cpp	2025-11-30 15:11:43.586059979 +0900
+@@ -127,7 +127,7 @@
+     // Generate a "a=fmtp:" line with "octet-aligned=1"
+     // (That is the only non-default parameter.)
+     char buf[100];
+-    sprintf(buf, "a=fmtp:%d octet-align=1\r\n", rtpPayloadType());
++    snprintf(buf, sizeof(buf), "a=fmtp:%d octet-align=1\r\n", rtpPayloadType());
+     delete[] fFmtpSDPLine; fFmtpSDPLine = strDup(buf);
+   }
+   return fFmtpSDPLine;
+diff -Naur live.step3/liveMedia/DVVideoRTPSink.cpp live/liveMedia/DVVideoRTPSink.cpp
+--- live.step3/liveMedia/DVVideoRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/DVVideoRTPSink.cpp	2025-11-30 15:11:52.713221128 +0900
+@@ -89,7 +89,7 @@
+     + strlen(profileName);
+   delete[] fFmtpSDPLine; // if it already exists
+   fFmtpSDPLine = new char[fmtpSDPFmtSize];  
+-  sprintf(fFmtpSDPLine, fmtpSDPFmt, rtpPayloadType(), profileName);
++  snprintf(fFmtpSDPLine, fmtpSDPFmtSize, fmtpSDPFmt, rtpPayloadType(), profileName);
+ 
+   return fFmtpSDPLine;
+ }
+diff -Naur live.step3/liveMedia/DigestAuthentication.cpp live/liveMedia/DigestAuthentication.cpp
+--- live.step3/liveMedia/DigestAuthentication.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/DigestAuthentication.cpp	2025-11-30 15:11:43.586059979 +0900
+@@ -115,14 +115,14 @@
+     unsigned const ha1DataLen = strlen(username()) + 1
+       + strlen(realm()) + 1 + strlen(password());
+     unsigned char* ha1Data = new unsigned char[ha1DataLen+1];
+-    sprintf((char*)ha1Data, "%s:%s:%s", username(), realm(), password());
++    snprintf((char*)ha1Data, ha1DataLen+1, "%s:%s:%s", username(), realm(), password());
+     our_MD5Data(ha1Data, ha1DataLen, ha1Buf);
+     delete[] ha1Data;
+   }
+ 
+   unsigned const ha2DataLen = strlen(cmd) + 1 + strlen(url);
+   unsigned char* ha2Data = new unsigned char[ha2DataLen+1];
+-  sprintf((char*)ha2Data, "%s:%s", cmd, url);
++  snprintf((char*)ha2Data, ha2DataLen+1, "%s:%s", cmd, url);
+   char ha2Buf[33];
+   our_MD5Data(ha2Data, ha2DataLen, ha2Buf);
+   delete[] ha2Data;
+@@ -130,7 +130,7 @@
+   unsigned const digestDataLen
+     = 32 + 1 + strlen(nonce()) + 1 + 32;
+   unsigned char* digestData = new unsigned char[digestDataLen+1];
+-  sprintf((char*)digestData, "%s:%s:%s",
++  snprintf((char*)digestData, digestDataLen+1, "%s:%s:%s",
+           ha1Buf, nonce(), ha2Buf);
+   char const* result = our_MD5Data(digestData, digestDataLen, NULL);
+   delete[] digestData;
+diff -Naur live.step3/liveMedia/EBMLNumber.cpp live/liveMedia/EBMLNumber.cpp
+--- live.step3/liveMedia/EBMLNumber.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/EBMLNumber.cpp	2025-11-30 15:11:43.587059997 +0900
+@@ -32,7 +32,7 @@
+   
+   char* to = printBuf;
+   for (unsigned i = 0; i < len; ++i) {
+-    sprintf(to, "%02X", data[i]);
++    snprintf(to, sizeof(to), "%02X", data[i]);
+     to += 2;
+   }
+ 
+diff -Naur live.step3/liveMedia/FileSink.cpp live/liveMedia/FileSink.cpp
+--- live.step3/liveMedia/FileSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/FileSink.cpp	2025-11-30 15:11:52.705220986 +0900
+@@ -34,7 +34,8 @@
+   fBuffer = new unsigned char[bufferSize];
+   if (perFrameFileNamePrefix != NULL) {
+     fPerFrameFileNamePrefix = strDup(perFrameFileNamePrefix);
+-    fPerFrameFileNameBuffer = new char[strlen(perFrameFileNamePrefix) + 100];
++    fPerFrameFileNameBufferSize = strlen(perFrameFileNamePrefix) + 100;
++    fPerFrameFileNameBuffer = new char[fPerFrameFileNameBufferSize];
+   } else {
+     fPerFrameFileNamePrefix = NULL;
+     fPerFrameFileNameBuffer = NULL;
+@@ -97,11 +98,11 @@
+ 	presentationTime.tv_sec == fPrevPresentationTime.tv_sec) {
+       // The presentation time is unchanged from the previous frame, so we add a 'counter'
+       // suffix to the file name, to distinguish them:
+-      sprintf(fPerFrameFileNameBuffer, "%s-%lu.%06lu-%u", fPerFrameFileNamePrefix,
+-	      presentationTime.tv_sec, presentationTime.tv_usec, ++fSamePresentationTimeCounter);
++      snprintf(fPerFrameFileNameBuffer, fPerFrameFileNameBufferSize, "%s-%lu.%06d-%u", fPerFrameFileNamePrefix,
++	      presentationTime.tv_sec, (int)presentationTime.tv_usec, ++fSamePresentationTimeCounter);
+     } else {
+-      sprintf(fPerFrameFileNameBuffer, "%s-%lu.%06lu", fPerFrameFileNamePrefix,
+-	      presentationTime.tv_sec, presentationTime.tv_usec);
++      snprintf(fPerFrameFileNameBuffer, fPerFrameFileNameBufferSize, "%s-%lu.%06d", fPerFrameFileNamePrefix,
++	      presentationTime.tv_sec, (int)presentationTime.tv_usec);
+       fPrevPresentationTime = presentationTime; // for next time
+       fSamePresentationTimeCounter = 0; // for next time
+     }
+diff -Naur live.step3/liveMedia/GenericMediaServer.cpp live/liveMedia/GenericMediaServer.cpp
+--- live.step3/liveMedia/GenericMediaServer.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/GenericMediaServer.cpp	2025-11-30 15:11:43.587059997 +0900
+@@ -349,7 +349,7 @@
+ 
+   // Remove ourself from the server's 'client sessions' hash table before we go:
+   char sessionIdStr[8+1];
+-  sprintf(sessionIdStr, "%08X", fOurSessionId);
++  snprintf(sessionIdStr, sizeof(sessionIdStr), "%08X", fOurSessionId);
+   fOurServer.fClientSessions->Remove(sessionIdStr);
+   
+   if (fOurServerMediaSession != NULL) {
+diff -Naur live.step3/liveMedia/H264VideoRTPSink.cpp live/liveMedia/H264VideoRTPSink.cpp
+--- live.step3/liveMedia/H264VideoRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/H264VideoRTPSink.cpp	2025-11-30 15:11:52.713221128 +0900
+@@ -118,7 +118,7 @@
+     + 6 /* 3 bytes in hex */
+     + strlen(sps_base64) + strlen(pps_base64);
+   char* fmtp = new char[fmtpFmtSize];
+-  sprintf(fmtp, fmtpFmt,
++  snprintf(fmtp, fmtpFmtSize, fmtpFmt,
+           rtpPayloadType(),
+ 	  profileLevelId,
+           sps_base64, pps_base64);
+diff -Naur live.step3/liveMedia/H265VideoRTPSink.cpp live/liveMedia/H265VideoRTPSink.cpp
+--- live.step3/liveMedia/H265VideoRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/H265VideoRTPSink.cpp	2025-11-30 15:11:52.713221128 +0900
+@@ -135,7 +135,7 @@
+   unsigned levelId = profileTierLevelHeaderBytes[11]; // general_level_idc
+   u_int8_t const* interop_constraints = &profileTierLevelHeaderBytes[5];
+   char interopConstraintsStr[100];
+-  sprintf(interopConstraintsStr, "%02X%02X%02X%02X%02X%02X", 
++  snprintf(interopConstraintsStr, sizeof(interopConstraintsStr), "%02X%02X%02X%02X%02X%02X", 
+ 	  interop_constraints[0], interop_constraints[1], interop_constraints[2],
+ 	  interop_constraints[3], interop_constraints[4], interop_constraints[5]);
+   delete[] vpsWEB;
+@@ -163,7 +163,7 @@
+     + strlen(sprop_sps)
+     + strlen(sprop_pps);
+   char* fmtp = new char[fmtpFmtSize];
+-  sprintf(fmtp, fmtpFmt,
++  snprintf(fmtp, fmtpFmtSize, fmtpFmt,
+           rtpPayloadType(), profileSpace,
+ 	  profileId,
+ 	  tierFlag,
+diff -Naur live.step3/liveMedia/HLSSegmenter.cpp live/liveMedia/HLSSegmenter.cpp
+--- live.step3/liveMedia/HLSSegmenter.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/HLSSegmenter.cpp	2025-11-30 15:11:43.587059997 +0900
+@@ -71,7 +71,7 @@
+ Boolean HLSSegmenter::openNextOutputSegment() {
+   CloseOutputFile(fOutFid);
+ 
+-  sprintf(fOutputSegmentFileName, "%s%03u.ts", fFileNamePrefix, fCurrentSegmentCounter);
++  snprintf(fOutputSegmentFileName, sizeof(fOutputSegmentFileName), "%s%03u.ts", fFileNamePrefix, fCurrentSegmentCounter);
+   fOutFid = OpenOutputFile(envir(), fOutputSegmentFileName);
+ 
+   return fOutFid != NULL;
+diff -Naur live.step3/liveMedia/MP3ADUTranscoder.cpp live/liveMedia/MP3ADUTranscoder.cpp
+--- live.step3/liveMedia/MP3ADUTranscoder.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/MP3ADUTranscoder.cpp	2025-11-30 15:11:43.587059997 +0900
+@@ -53,7 +53,7 @@
+ 
+   // Then modify them by appending the corrected bandwidth
+   char buffer[30];
+-  sprintf(buffer, " bandwidth %d", outBitrate());
++  snprintf(buffer, sizeof(buffer), " bandwidth %d", outBitrate());
+   envir().appendToResultMsg(buffer);
+ }
+ 
+diff -Naur live.step3/liveMedia/MP3FileSource.cpp live/liveMedia/MP3FileSource.cpp
+--- live.step3/liveMedia/MP3FileSource.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/MP3FileSource.cpp	2025-11-30 15:11:43.587059997 +0900
+@@ -145,7 +145,7 @@
+   }
+   if (!fStreamState->readFrame(fTo, fMaxSize, fFrameSize, fDurationInMicroseconds)) {
+     char tmp[200];
+-    sprintf(tmp,
++    snprintf(tmp, sizeof(tmp),
+ 	    "Insufficient buffer size %d for reading MPEG audio frame (needed %d)\n",
+ 	    fMaxSize, fFrameSize);
+     envir().setResultMsg(tmp);
+diff -Naur live.step3/liveMedia/MPEG2TransportStreamParser_STREAM.cpp live/liveMedia/MPEG2TransportStreamParser_STREAM.cpp
+--- live.step3/liveMedia/MPEG2TransportStreamParser_STREAM.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/MPEG2TransportStreamParser_STREAM.cpp	2025-11-30 15:11:43.587059997 +0900
+@@ -292,7 +292,7 @@
+   char fileName[100];
+   extern StreamType StreamTypes[];
+   StreamType& st = StreamTypes[streamType]; // alias
+-  sprintf(fileName, "%s-0x%04x-0x%04x%s",
++  snprintf(fileName, sizeof(fileName), "%s-0x%04x-0x%04x%s",
+ 	  st.dataType == StreamType::AUDIO ? "AUDIO" :
+ 	  st.dataType == StreamType::VIDEO ? "VIDEO" :
+ 	  st.dataType == StreamType::DATA ? "DATA" :
+diff -Naur live.step3/liveMedia/MPEG4ESVideoRTPSink.cpp live/liveMedia/MPEG4ESVideoRTPSink.cpp
+--- live.step3/liveMedia/MPEG4ESVideoRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/MPEG4ESVideoRTPSink.cpp	2025-11-30 15:11:52.713221128 +0900
+@@ -127,13 +127,13 @@
+     + 2*configLength /* 2*, because each byte prints as 2 chars */
+     + 2 /* trailing \r\n */;
+   char* fmtp = new char[fmtpFmtSize];
+-  sprintf(fmtp, fmtpFmt, rtpPayloadType(), fProfileAndLevelIndication);
++  snprintf(fmtp, fmtpFmtSize, fmtpFmt, rtpPayloadType(), fProfileAndLevelIndication);
+   char* endPtr = &fmtp[strlen(fmtp)];
+   for (unsigned i = 0; i < configLength; ++i) {
+-    sprintf(endPtr, "%02X", config[i]);
++    snprintf(endPtr, 3, "%02X", config[i]);
+     endPtr += 2;
+   }
+-  sprintf(endPtr, "\r\n");
++  snprintf(endPtr, sizeof(endPtr), "\r\n");
+ 
+   delete[] fFmtpSDPLine;
+   fFmtpSDPLine = strDup(fmtp);
+diff -Naur live.step3/liveMedia/MPEG4GenericRTPSink.cpp live/liveMedia/MPEG4GenericRTPSink.cpp
+--- live.step3/liveMedia/MPEG4GenericRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/MPEG4GenericRTPSink.cpp	2025-11-30 15:11:52.713221128 +0900
+@@ -62,7 +62,7 @@
+     + strlen(fMPEG4Mode)
+     + strlen(fConfigString);
+   char* fmtp = new char[fmtpFmtSize];
+-  sprintf(fmtp, fmtpFmt,
++  snprintf(fmtp, fmtpFmtSize, fmtpFmt,
+ 	  rtpPayloadType(),
+ 	  strcmp(fSDPMediaTypeString, "video") == 0 ? 4 : 5,
+ 	  fMPEG4Mode,
+diff -Naur live.step3/liveMedia/MPEG4GenericRTPSource.cpp live/liveMedia/MPEG4GenericRTPSource.cpp
+--- live.step3/liveMedia/MPEG4GenericRTPSource.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/MPEG4GenericRTPSource.cpp	2025-11-30 15:11:52.705220986 +0900
+@@ -88,7 +88,7 @@
+       strlen(mediumName) + 14 /* strlen("/MPEG4-GENERIC") */ + 1;
+     fMIMEType = new char[mimeTypeLength];
+     if (fMIMEType != NULL) {
+-      sprintf(fMIMEType, "%s/MPEG4-GENERIC", mediumName);
++      snprintf(fMIMEType, mimeTypeLength, "%s/MPEG4-GENERIC", mediumName);
+     }
+ 
+     fMode = strDup(mode);
+diff -Naur live.step3/liveMedia/MPEG4LATMAudioRTPSink.cpp live/liveMedia/MPEG4LATMAudioRTPSink.cpp
+--- live.step3/liveMedia/MPEG4LATMAudioRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/MPEG4LATMAudioRTPSink.cpp	2025-11-30 15:11:52.713221128 +0900
+@@ -39,7 +39,7 @@
+     + 3 /* max char len */
+     + strlen(fStreamMuxConfigString);
+   char* fmtp = new char[fmtpFmtSize];
+-  sprintf(fmtp, fmtpFmt,
++  snprintf(fmtp, fmtpFmtSize, fmtpFmt,
+ 	  rtpPayloadType(),
+ 	  fStreamMuxConfigString);
+   fFmtpSDPLine = strDup(fmtp);
+diff -Naur live.step3/liveMedia/MPEG4VideoStreamFramer.cpp live/liveMedia/MPEG4VideoStreamFramer.cpp
+--- live.step3/liveMedia/MPEG4VideoStreamFramer.cpp	2025-11-30 15:19:48.724247165 +0900
++++ live/liveMedia/MPEG4VideoStreamFramer.cpp	2025-11-30 15:11:52.701220915 +0900
+@@ -430,7 +430,7 @@
+ 
+   if (fNumBitsSeenSoFar/8 >= curFrameSize()) {
+     char errMsg[200];
+-    sprintf(errMsg, "Not enough bits in VOL header: %d/8 >= %d\n", fNumBitsSeenSoFar, curFrameSize());
++    snprintf(errMsg, sizeof(errMsg), "Not enough bits in VOL header: %d/8 >= %d\n", fNumBitsSeenSoFar, curFrameSize());
+     usingSource()->envir() << errMsg;
+   }
+ }
+diff -Naur live.step3/liveMedia/MatroskaFile.cpp live/liveMedia/MatroskaFile.cpp
+--- live.step3/liveMedia/MatroskaFile.cpp	2025-11-30 15:19:48.724247165 +0900
++++ live/liveMedia/MatroskaFile.cpp	2025-11-30 15:11:52.714221146 +0900
+@@ -618,7 +618,7 @@
+       char* configStr = new char[2*track->codecPrivateSize + 1]; if (configStr == NULL) break;
+           // 2 hex digits per byte, plus the trailing '\0'
+       for (unsigned i = 0; i < track->codecPrivateSize; ++i) {
+-	sprintf(&configStr[2*i], "%02X", track->codecPrivate[i]);
++	snprintf(&configStr[2*i], 3, "%02X", track->codecPrivate[i]); // 2 hex digits + null terminator
+       }
+ 
+       result = MPEG4GenericRTPSink::createNew(envir(), rtpGroupsock,
+@@ -708,11 +708,14 @@
+       char* pps_base64 = base64Encode((char *)(uintptr_t)pps, ppsSize);
+       delete[] sps; delete[] pps;
+ 
+-      char* sPropParameterSetsStr
+-	= new char[(sps_base64 == NULL ? 0 : strlen(sps_base64)) +
+-		   (pps_base64 == NULL ? 0 : strlen(pps_base64)) +
+-		   10 /*more than enough space*/];
+-      sprintf(sPropParameterSetsStr, "%s,%s", sps_base64, pps_base64);
++      unsigned const sPropParameterSetsStrSize
++	= (sps_base64 == NULL ? 0 : strlen(sps_base64)) +
++	  (pps_base64 == NULL ? 0 : strlen(pps_base64)) +
++	  10 /*more than enough space*/;
++      char* sPropParameterSetsStr = new char[sPropParameterSetsStrSize];
++      snprintf(sPropParameterSetsStr, sPropParameterSetsStrSize, "%s,%s",
++	       sps_base64 == NULL ? "" : sps_base64,
++	       pps_base64 == NULL ? "" : pps_base64);
+       delete[] sps_base64; delete[] pps_base64;
+ 
+       result = H264VideoFileSink::createNew(envir(), fileName,
+diff -Naur live.step3/liveMedia/MatroskaFile.cpp.orig live/liveMedia/MatroskaFile.cpp.orig
+--- live.step3/liveMedia/MatroskaFile.cpp.orig	1970-01-01 09:00:00.000000000 +0900
++++ live/liveMedia/MatroskaFile.cpp.orig	2025-11-30 15:11:43.588060014 +0900
+@@ -0,0 +1,1085 @@
++/**********
++This library is free software; you can redistribute it and/or modify it under
++the terms of the GNU Lesser General Public License as published by the
++Free Software Foundation; either version 3 of the License, or (at your
++option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
++
++This library is distributed in the hope that it will be useful, but WITHOUT
++ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
++more details.
++
++You should have received a copy of the GNU Lesser General Public License
++along with this library; if not, write to the Free Software Foundation, Inc.,
++51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
++**********/
++// "liveMedia"
++// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
++// A class that encapsulates a Matroska file.
++// Implementation
++
++#include "MatroskaFileParser.hh"
++#include "MatroskaDemuxedTrack.hh"
++#include <ByteStreamFileSource.hh>
++#include <H264VideoStreamDiscreteFramer.hh>
++#include <H265VideoStreamDiscreteFramer.hh>
++#include <MPEG1or2AudioRTPSink.hh>
++#include <MPEG4GenericRTPSink.hh>
++#include <AC3AudioRTPSink.hh>
++#include <SimpleRTPSink.hh>
++#include <VorbisAudioRTPSink.hh>
++#include <H264VideoRTPSink.hh>
++#include <H265VideoRTPSink.hh>
++#include <VP8VideoRTPSink.hh>
++#include <VP9VideoRTPSink.hh>
++#include <TheoraVideoRTPSink.hh>
++#include <RawVideoRTPSink.hh>
++#include <T140TextRTPSink.hh>
++#include <Base64.hh>
++#include <H264VideoFileSink.hh>
++#include <H265VideoFileSink.hh>
++#include <AMRAudioFileSink.hh>
++#include <OggFileSink.hh>
++
++////////// CuePoint definition //////////
++
++class CuePoint {
++public:
++  CuePoint(double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster/* 1-based */);
++  virtual ~CuePoint();
++
++  static void addCuePoint(CuePoint*& root, double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster/* 1-based */,
++			  Boolean& needToReviseBalanceOfParent);
++    // If "cueTime" == "root.fCueTime", replace the existing data, otherwise add to the left or right subtree.
++    // (Note that this is a static member function because - as a result of tree rotation - "root" might change.)
++
++  Boolean lookup(double& cueTime, u_int64_t& resultClusterOffsetInFile, unsigned& resultBlockNumWithinCluster);
++
++  static void fprintf(FILE* fid, CuePoint* cuePoint); // used for debugging; it's static to allow for "cuePoint == NULL"
++
++private:
++  // The "CuePoint" tree is implemented as an AVL Tree, to keep it balanced (for efficient lookup).
++  CuePoint* fSubTree[2]; // 0 => left; 1 => right
++  CuePoint* left() const { return fSubTree[0]; }
++  CuePoint* right() const { return fSubTree[1]; }
++  char fBalance; // height of right subtree - height of left subtree
++
++  static void rotate(unsigned direction/*0 => left; 1 => right*/, CuePoint*& root); // used to keep the tree in balance
++
++  double fCueTime;
++  u_int64_t fClusterOffsetInFile;
++  unsigned fBlockNumWithinCluster; // 0-based
++};
++
++UsageEnvironment& operator<<(UsageEnvironment& env, const CuePoint* cuePoint); // used for debugging
++
++
++////////// MatroskaTrackTable definition /////////
++
++// For looking up and iterating over the file's tracks:
++class MatroskaTrackTable {
++public:
++  MatroskaTrackTable();
++  virtual ~MatroskaTrackTable();
++
++  void add(MatroskaTrack* newTrack, unsigned trackNumber);
++  MatroskaTrack* lookup(unsigned trackNumber);
++
++  unsigned numTracks() const;
++
++  class Iterator {
++  public:
++    Iterator(MatroskaTrackTable& ourTable);
++    virtual ~Iterator();
++    MatroskaTrack* next();
++  private:
++    HashTable::Iterator* fIter;
++  };
++
++private:
++  friend class Iterator;
++  HashTable* fTable;
++};
++
++
++
++////////// MatroskaFile implementation //////////
++
++void MatroskaFile
++::createNew(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData,
++	    char const* preferredLanguage) {
++  new MatroskaFile(env, fileName, onCreation, onCreationClientData, preferredLanguage);
++}
++
++MatroskaFile::MatroskaFile(UsageEnvironment& env, char const* fileName, onCreationFunc* onCreation, void* onCreationClientData,
++			   char const* preferredLanguage)
++  : Medium(env),
++    fFileName(strDup(fileName)), fOnCreation(onCreation), fOnCreationClientData(onCreationClientData),
++    fPreferredLanguage(strDup(preferredLanguage)),
++    fTimecodeScale(1000000), fSegmentDuration(0.0), fSegmentDataOffset(0), fClusterOffset(0), fCuesOffset(0), fCuePoints(NULL),
++    fChosenVideoTrackNumber(0), fChosenAudioTrackNumber(0), fChosenSubtitleTrackNumber(0) {
++  fTrackTable = new MatroskaTrackTable;
++  fDemuxesTable = HashTable::create(ONE_WORD_HASH_KEYS);
++
++  FramedSource* inputSource = ByteStreamFileSource::createNew(envir(), fileName);
++  if (inputSource == NULL) {
++    // The specified input file does not exist!
++    fParserForInitialization = NULL;
++    handleEndOfTrackHeaderParsing(); // we have no file, and thus no tracks, but we still need to signal this
++  } else {
++    // Initialize ourselves by parsing the file's 'Track' headers:
++    fParserForInitialization = new MatroskaFileParser(*this, inputSource, handleEndOfTrackHeaderParsing, this, NULL);
++  }
++}
++
++struct DemuxRecord {
++  MatroskaDemux* demux;
++  MatroskaDemuxOnDeletionFunc* onDeletionFunc;
++  void* objectToNotify;
++};
++
++MatroskaFile::~MatroskaFile() {
++  delete fParserForInitialization;
++  delete fCuePoints;
++
++  // Delete any outstanding "MatroskaDemux"s, and the table for them:
++  DemuxRecord* demuxRecord;
++  while ((demuxRecord = (DemuxRecord*)fDemuxesTable->RemoveNext()) != NULL) {
++    delete demuxRecord->demux;
++    delete demuxRecord;
++  }
++  delete fDemuxesTable;
++  delete fTrackTable;
++
++  delete[] (char*)fPreferredLanguage;
++  delete[] (char*)fFileName;
++}
++
++void MatroskaFile::handleEndOfTrackHeaderParsing(void* clientData) {
++  ((MatroskaFile*)clientData)->handleEndOfTrackHeaderParsing();
++}
++
++class TrackChoiceRecord {
++public:
++  unsigned trackNumber;
++  u_int8_t trackType;
++  unsigned choiceFlags;
++};
++
++void MatroskaFile::handleEndOfTrackHeaderParsing() {
++  // Having parsed all of our track headers, iterate through the tracks to figure out which ones should be played.
++  // The Matroska 'specification' is rather imprecise about this (as usual).  However, we use the following algorithm:
++  // - Use one (but no more) enabled track of each type (video, audio, subtitle).  (Ignore all tracks that are not 'enabled'.)
++  // - For each track type, choose the one that's 'forced'.
++  //     - If more than one is 'forced', choose the first one that matches our preferred language, or the first if none matches.
++  //     - If none is 'forced', choose the one that's 'default'.
++  //     - If more than one is 'default', choose the first one that matches our preferred language, or the first if none matches.
++  //     - If none is 'default', choose the first one that matches our preferred language, or the first if none matches.
++  unsigned numTracks = fTrackTable->numTracks();
++  if (numTracks > 0) {
++    TrackChoiceRecord* trackChoice = new TrackChoiceRecord[numTracks];
++    unsigned numEnabledTracks = 0;
++    MatroskaTrackTable::Iterator iter(*fTrackTable);
++    MatroskaTrack* track;
++    while ((track = iter.next()) != NULL) {
++      if (!track->isEnabled || track->trackType == 0 || track->mimeType[0] == '\0') continue; // track not enabled, or not fully-defined
++
++      trackChoice[numEnabledTracks].trackNumber = track->trackNumber;
++      trackChoice[numEnabledTracks].trackType = track->trackType;
++
++      // Assign flags for this track so that, when sorted, the largest value becomes our choice:
++      unsigned choiceFlags = 0;
++      if (fPreferredLanguage != NULL && track->language != NULL && strcmp(fPreferredLanguage, track->language) == 0) {
++	// This track matches our preferred language:
++	choiceFlags |= 1;
++      }
++      if (track->isForced) {
++	choiceFlags |= 4;
++      } else if (track->isDefault) {
++	choiceFlags |= 2;
++      }
++      trackChoice[numEnabledTracks].choiceFlags = choiceFlags;
++
++      ++numEnabledTracks;
++    }
++
++    // Choose the desired track for each track type:
++    for (u_int8_t trackType = 0x01; trackType != MATROSKA_TRACK_TYPE_OTHER; trackType <<= 1) {
++      int bestNum = -1;
++      int bestChoiceFlags = -1;
++      for (unsigned i = 0; i < numEnabledTracks; ++i) {
++	if (trackChoice[i].trackType == trackType && (int)trackChoice[i].choiceFlags > bestChoiceFlags) {
++	  bestNum = i;
++	  bestChoiceFlags = (int)trackChoice[i].choiceFlags;
++	}
++      }
++      if (bestChoiceFlags >= 0) { // There is a track for this track type
++	if (trackType == MATROSKA_TRACK_TYPE_VIDEO) fChosenVideoTrackNumber = trackChoice[bestNum].trackNumber;
++	else if (trackType == MATROSKA_TRACK_TYPE_AUDIO) fChosenAudioTrackNumber = trackChoice[bestNum].trackNumber;
++	else fChosenSubtitleTrackNumber = trackChoice[bestNum].trackNumber;
++      }
++    }
++
++    delete[] trackChoice;
++  }
++  
++#ifdef DEBUG
++  if (fChosenVideoTrackNumber > 0) fprintf(stderr, "Chosen video track: #%d\n", fChosenVideoTrackNumber); else fprintf(stderr, "No chosen video track\n");
++  if (fChosenAudioTrackNumber > 0) fprintf(stderr, "Chosen audio track: #%d\n", fChosenAudioTrackNumber); else fprintf(stderr, "No chosen audio track\n");
++  if (fChosenSubtitleTrackNumber > 0) fprintf(stderr, "Chosen subtitle track: #%d\n", fChosenSubtitleTrackNumber); else fprintf(stderr, "No chosen subtitle track\n");
++#endif
++
++  // Delete our parser, because it's done its job now:
++  delete fParserForInitialization; fParserForInitialization = NULL;
++
++  // Finally, signal our caller that we've been created and initialized:
++  if (fOnCreation != NULL) (*fOnCreation)(this, fOnCreationClientData);
++}
++
++MatroskaTrack* MatroskaFile::lookup(unsigned trackNumber) const {
++  return fTrackTable->lookup(trackNumber);
++}
++
++MatroskaDemux* MatroskaFile
++::newDemux(MatroskaDemuxOnDeletionFunc* onDeletionFunc, void* objectToNotify) {
++  MatroskaDemux* demux = new MatroskaDemux(*this);
++
++  DemuxRecord* demuxRecord = new DemuxRecord();
++  demuxRecord->demux = demux;
++  demuxRecord->onDeletionFunc = onDeletionFunc;
++  demuxRecord->objectToNotify = objectToNotify;
++
++  fDemuxesTable->Add((char const*)demux, demuxRecord);
++
++  return demux;
++}
++
++void MatroskaFile::removeDemux(MatroskaDemux* demux) {
++  DemuxRecord* demuxRecord = (DemuxRecord*)(fDemuxesTable->Lookup((char const*)demux));
++  if (demuxRecord != NULL) {
++    fDemuxesTable->Remove((char const*)demux);
++
++    if (demuxRecord->onDeletionFunc != NULL) {
++      (*demuxRecord->onDeletionFunc)(demuxRecord->objectToNotify, demux);
++    }
++    delete demuxRecord;
++  }
++}
++
++#define getPrivByte(b) if (n == 0) break; else do {b = *p++; --n;} while (0) /* Vorbis/Theora configuration header parsing */
++#define CHECK_PTR if (ptr >= limit) break /* H.264/H.265 parsing */
++#define NUM_BYTES_REMAINING (unsigned)(limit - ptr) /* H.264/H.265 parsing */
++
++void MatroskaFile::getH264ConfigData(MatroskaTrack const* track,
++				     u_int8_t*& sps, unsigned& spsSize,
++				     u_int8_t*& pps, unsigned& ppsSize) {
++  sps = pps = NULL;
++  spsSize = ppsSize = 0;
++
++  do {
++    if (track == NULL) break;
++
++    // Use our track's 'Codec Private' data: Bytes 5 and beyond contain SPS and PPSs:
++    if (track->codecPrivateSize < 6) break;
++    u_int8_t* SPSandPPSBytes = &track->codecPrivate[5];
++    unsigned numSPSandPPSBytes = track->codecPrivateSize - 5;
++
++    // Extract, from "SPSandPPSBytes", one SPS NAL unit, and one PPS NAL unit.
++    // (I hope one is all we need of each.)
++    unsigned i;
++    u_int8_t* ptr = SPSandPPSBytes;
++    u_int8_t* limit = &SPSandPPSBytes[numSPSandPPSBytes];
++	
++    unsigned numSPSs = (*ptr++)&0x1F; CHECK_PTR;
++    for (i = 0; i < numSPSs; ++i) {
++      unsigned spsSize1 = (*ptr++)<<8; CHECK_PTR;
++      spsSize1 |= *ptr++; CHECK_PTR;
++	  
++      if (spsSize1 > NUM_BYTES_REMAINING) break;
++      u_int8_t nal_unit_type = ptr[0]&0x1F;
++      if (sps == NULL && nal_unit_type == 7/*sanity check*/) { // save the first one
++	spsSize = spsSize1;
++	sps = new u_int8_t[spsSize];
++	memmove(sps, ptr, spsSize);
++      }
++      ptr += spsSize1;
++    }
++	
++    unsigned numPPSs = (*ptr++)&0x1F; CHECK_PTR;
++    for (i = 0; i < numPPSs; ++i) {
++      unsigned ppsSize1 = (*ptr++)<<8; CHECK_PTR;
++      ppsSize1 |= *ptr++; CHECK_PTR;
++	  
++      if (ppsSize1 > NUM_BYTES_REMAINING) break;
++      u_int8_t nal_unit_type = ptr[0]&0x1F;
++      if (pps == NULL && nal_unit_type == 8/*sanity check*/) { // save the first one
++	ppsSize = ppsSize1;
++	pps = new u_int8_t[ppsSize];
++	memmove(pps, ptr, ppsSize);
++      }
++      ptr += ppsSize1;
++    }
++
++    return;
++  } while (0);
++
++  // An error occurred:
++  delete[] sps; sps = NULL; spsSize = 0;
++  delete[] pps; pps = NULL; ppsSize = 0;
++}
++
++void MatroskaFile::getH265ConfigData(MatroskaTrack const* track,
++				     u_int8_t*& vps, unsigned& vpsSize,
++				     u_int8_t*& sps, unsigned& spsSize,
++				     u_int8_t*& pps, unsigned& ppsSize) {
++  vps = sps = pps = NULL;
++  vpsSize = spsSize = ppsSize = 0;
++
++  do {
++    if (track == NULL) break;
++
++    u_int8_t* VPS_SPS_PPSBytes = NULL; unsigned numVPS_SPS_PPSBytes = 0;
++    unsigned i;
++
++    if (track->codecPrivateUsesH264FormatForH265) {
++      // The data uses the H.264-style format (but including VPS NAL unit(s)).
++      // The VPS,SPS,PPS NAL unit information starts at byte #5:
++      if (track->codecPrivateSize >= 6) {
++	numVPS_SPS_PPSBytes = track->codecPrivateSize - 5;
++	VPS_SPS_PPSBytes = &track->codecPrivate[5];
++      }
++    } else {
++      // The data uses the proper H.265-style format.
++      // The VPS,SPS,PPS NAL unit information starts at byte #22:
++      if (track->codecPrivateSize >= 23) {
++	numVPS_SPS_PPSBytes = track->codecPrivateSize - 22;
++ 	VPS_SPS_PPSBytes = &track->codecPrivate[22];
++      }
++    }
++    if (VPS_SPS_PPSBytes == NULL) break; // no VPS,SPS,PPS NAL unit information was present
++	
++    // Extract, from "VPS_SPS_PPSBytes", one VPS NAL unit, one SPS NAL unit, and one PPS NAL unit.
++    // (I hope one is all we need of each.)
++    u_int8_t* ptr = VPS_SPS_PPSBytes;
++    u_int8_t* limit = &VPS_SPS_PPSBytes[numVPS_SPS_PPSBytes];
++	
++    if (track->codecPrivateUsesH264FormatForH265) {
++      // The data uses the H.264-style format (but including VPS NAL unit(s)).
++      while (NUM_BYTES_REMAINING > 0) {
++	unsigned numNALUnits = (*ptr++)&0x1F; CHECK_PTR;
++	for (i = 0; i < numNALUnits; ++i) {
++	  unsigned nalUnitLength = (*ptr++)<<8; CHECK_PTR;
++	  nalUnitLength |= *ptr++; CHECK_PTR;
++	      
++	  if (nalUnitLength > NUM_BYTES_REMAINING) break;
++	  u_int8_t nal_unit_type = (ptr[0]&0x7E)>>1;
++	  if (nal_unit_type == 32) { // VPS
++	    vpsSize = nalUnitLength;
++	    delete[] vps; vps = new u_int8_t[nalUnitLength];
++	    memmove(vps, ptr, nalUnitLength);
++	  } else if (nal_unit_type == 33) { // SPS
++	    spsSize = nalUnitLength;
++	    delete[] sps; sps = new u_int8_t[nalUnitLength];
++	    memmove(sps, ptr, nalUnitLength);
++	  } else if (nal_unit_type == 34) { // PPS
++	    ppsSize = nalUnitLength;
++	    delete[] pps; pps = new u_int8_t[nalUnitLength];
++	    memmove(pps, ptr, nalUnitLength);
++	  }
++	  ptr += nalUnitLength;
++	}
++      }
++    } else {
++      // The data uses the proper H.265-style format.
++      unsigned numOfArrays = *ptr++; CHECK_PTR;
++      for (unsigned j = 0; j < numOfArrays; ++j) {
++	++ptr; CHECK_PTR; // skip the 'array_completeness'|'reserved'|'NAL_unit_type' byte
++	    
++	unsigned numNalus = (*ptr++)<<8; CHECK_PTR;
++	numNalus |= *ptr++; CHECK_PTR;
++	    
++	for (i = 0; i < numNalus; ++i) {
++	  unsigned nalUnitLength = (*ptr++)<<8; CHECK_PTR;
++	  nalUnitLength |= *ptr++; CHECK_PTR;
++	      
++	  if (nalUnitLength > NUM_BYTES_REMAINING) break;
++	  u_int8_t nal_unit_type = (ptr[0]&0x7E)>>1;
++	  if (nal_unit_type == 32) { // VPS
++	    vpsSize = nalUnitLength;
++	    delete[] vps; vps = new u_int8_t[nalUnitLength];
++	    memmove(vps, ptr, nalUnitLength);
++	  } else if (nal_unit_type == 33) { // SPS
++	    spsSize = nalUnitLength;
++	    delete[] sps; sps = new u_int8_t[nalUnitLength];
++	    memmove(sps, ptr, nalUnitLength);
++	  } else if (nal_unit_type == 34) { // PPS
++	    ppsSize = nalUnitLength;
++	    delete[] pps; pps = new u_int8_t[nalUnitLength];
++	    memmove(pps, ptr, nalUnitLength);
++	  }
++	  ptr += nalUnitLength;
++	}
++      }
++    }
++
++    return;
++  } while (0);
++
++  // An error occurred:
++  delete[] vps; vps = NULL; vpsSize = 0;
++  delete[] sps; sps = NULL; spsSize = 0;
++  delete[] pps; pps = NULL; ppsSize = 0;
++}
++
++void MatroskaFile
++::getVorbisOrTheoraConfigData(MatroskaTrack const* track,
++			      u_int8_t*& identificationHeader, unsigned& identificationHeaderSize,
++			      u_int8_t*& commentHeader, unsigned& commentHeaderSize,
++			      u_int8_t*& setupHeader, unsigned& setupHeaderSize) {
++  identificationHeader = commentHeader = setupHeader = NULL;
++  identificationHeaderSize = commentHeaderSize = setupHeaderSize = 0;
++
++  do {
++    if (track == NULL) break;
++
++    // The Matroska file's 'Codec Private' data is assumed to be the codec configuration
++    // information, containing the "Identification", "Comment", and "Setup" headers.
++    // Extract these headers now:
++    Boolean isTheora = strcmp(track->mimeType, "video/THEORA") == 0; // otherwise, Vorbis
++    u_int8_t* p = track->codecPrivate;
++    unsigned n = track->codecPrivateSize;
++    if (n == 0 || p == NULL) break; // we have no 'Codec Private' data
++    
++    u_int8_t numHeaders;
++    getPrivByte(numHeaders);
++    unsigned headerSize[3]; // we don't handle any more than 2+1 headers
++    
++    // Extract the sizes of each of these headers:
++    unsigned sizesSum = 0;
++    Boolean success = True;
++    unsigned i;
++    for (i = 0; i < numHeaders && i < 3; ++i) {
++      unsigned len = 0;
++      u_int8_t c;
++      
++      do {
++	success = False;
++	getPrivByte(c);
++	success = True;
++	
++	len += c;
++      } while (c == 255);
++      if (!success || len == 0) break;
++      
++      headerSize[i] = len;
++      sizesSum += len;
++    }
++    if (!success) break;
++    
++    // Compute the implicit size of the final header:
++    if (numHeaders < 3) {
++      int finalHeaderSize = n - sizesSum;
++      if (finalHeaderSize <= 0) break; // error in data; give up
++      
++      headerSize[numHeaders] = (unsigned)finalHeaderSize;
++      ++numHeaders; // include the final header now
++    } else {
++      numHeaders = 3; // The maximum number of headers that we handle
++    }
++    
++    // Then, extract and classify each header:
++    for (i = 0; i < numHeaders; ++i) {
++      success = False;
++      unsigned newHeaderSize = headerSize[i];
++      u_int8_t* newHeader = new u_int8_t[newHeaderSize];
++      if (newHeader == NULL) break;
++      
++      u_int8_t* hdr = newHeader;
++      while (newHeaderSize-- > 0) {
++	success = False;
++	getPrivByte(*hdr++);
++	success = True;
++      }
++      if (!success) {
++	delete[] newHeader;
++	break;
++      }
++      
++      u_int8_t headerType = newHeader[0];
++      if (headerType == 1 || (isTheora && headerType == 0x80)) { // "identification" header
++	delete[] identificationHeader; identificationHeader = newHeader;
++	identificationHeaderSize = headerSize[i];
++      } else if (headerType == 3 || (isTheora && headerType == 0x81)) { // "comment" header
++	delete[] commentHeader; commentHeader = newHeader;
++	commentHeaderSize = headerSize[i];
++      } else if (headerType == 5 || (isTheora && headerType == 0x82)) { // "setup" header
++	delete[] setupHeader; setupHeader = newHeader;
++	setupHeaderSize = headerSize[i];
++      } else {
++	delete[] newHeader; // because it was a header type that we don't understand
++      }
++    }
++    if (!success) break;
++
++    return;
++  } while (0);
++
++  // An error occurred:
++  delete[] identificationHeader; identificationHeader = NULL; identificationHeaderSize = 0;
++  delete[] commentHeader; commentHeader = NULL; commentHeaderSize = 0;
++  delete[] setupHeader; setupHeader = NULL; setupHeaderSize = 0;
++}
++
++float MatroskaFile::fileDuration() {
++  if (fCuePoints == NULL) return 0.0; // Hack, because the RTSP server code assumes that duration > 0 => seekable. (fix this) #####
++
++  return segmentDuration()*(timecodeScale()/1000000000.0f);
++}
++
++// The size of the largest key frame that we expect.  This determines our buffer sizes:
++#define MAX_KEY_FRAME_SIZE 300000
++
++FramedSource* MatroskaFile
++::createSourceForStreaming(FramedSource* baseSource, unsigned trackNumber,
++			   unsigned& estBitrate, unsigned& numFiltersInFrontOfTrack) {
++  if (baseSource == NULL) return NULL;
++
++  FramedSource* result = baseSource; // by default
++  estBitrate = 100; // by default
++  numFiltersInFrontOfTrack = 0; // by default
++
++  // Look at the track's MIME type to set its estimated bitrate (for use by RTCP).
++  // (Later, try to be smarter about figuring out the bitrate.) #####
++  // Some MIME types also require adding a special 'framer' in front of the source.
++  MatroskaTrack* track = lookup(trackNumber);
++  if (track != NULL) { // should always be true
++    if (strcmp(track->mimeType, "audio/MPEG") == 0) {
++      estBitrate = 128;
++    } else if (strcmp(track->mimeType, "audio/AAC") == 0) {
++      estBitrate = 96;
++    } else if (strcmp(track->mimeType, "audio/AC3") == 0) {
++      estBitrate = 48;
++    } else if (strcmp(track->mimeType, "audio/VORBIS") == 0) {
++      estBitrate = 96;
++    } else if (strcmp(track->mimeType, "video/H264") == 0) {
++      estBitrate = 500;
++      // Allow for the possibility of very large NAL units being fed to the sink object:
++      OutPacketBuffer::increaseMaxSizeTo(MAX_KEY_FRAME_SIZE); // bytes
++
++      // Add a framer in front of the source:
++      result = H264VideoStreamDiscreteFramer::createNew(envir(), result);
++      ++numFiltersInFrontOfTrack;
++    } else if (strcmp(track->mimeType, "video/H265") == 0) {
++      estBitrate = 500;
++      // Allow for the possibility of very large NAL units being fed to the sink object:
++      OutPacketBuffer::increaseMaxSizeTo(MAX_KEY_FRAME_SIZE); // bytes
++
++      // Add a framer in front of the source:
++      result = H265VideoStreamDiscreteFramer::createNew(envir(), result);
++      ++numFiltersInFrontOfTrack;
++    } else if (strcmp(track->mimeType, "video/VP8") == 0) {
++      estBitrate = 500;
++    } else if (strcmp(track->mimeType, "video/VP9") == 0) {
++      estBitrate = 500;
++    } else if (strcmp(track->mimeType, "video/THEORA") == 0) {
++      estBitrate = 500;
++    } else if (strcmp(track->mimeType, "text/T140") == 0) {
++      estBitrate = 48;
++    }
++  }
++
++  return result;
++}
++
++char const* MatroskaFile::trackMIMEType(unsigned trackNumber) const {
++  MatroskaTrack* track = lookup(trackNumber);
++  if (track == NULL) return NULL;
++
++  return track->mimeType;
++}
++
++RTPSink* MatroskaFile
++::createRTPSinkForTrackNumber(unsigned trackNumber, Groupsock* rtpGroupsock,
++			      unsigned char rtpPayloadTypeIfDynamic) {
++  RTPSink* result = NULL; // default value, if an error occurs
++
++  do {
++    MatroskaTrack* track = lookup(trackNumber);
++    if (track == NULL) break;
++
++    if (strcmp(track->mimeType, "audio/L16") == 0) {
++      result = SimpleRTPSink::createNew(envir(), rtpGroupsock,rtpPayloadTypeIfDynamic, track->samplingFrequency, "audio", "L16", track->numChannels);
++    } else if (strcmp(track->mimeType, "audio/MPEG") == 0) {
++      result = MPEG1or2AudioRTPSink::createNew(envir(), rtpGroupsock);
++    } else if (strcmp(track->mimeType, "audio/AAC") == 0) {
++      // The Matroska file's 'Codec Private' data is assumed to be the AAC configuration
++      // information.  Use this to generate a hexadecimal 'config' string for the new RTP sink:
++      char* configStr = new char[2*track->codecPrivateSize + 1]; if (configStr == NULL) break;
++          // 2 hex digits per byte, plus the trailing '\0'
++      for (unsigned i = 0; i < track->codecPrivateSize; ++i) {
++	sprintf(&configStr[2*i], "%02X", track->codecPrivate[i]);
++      }
++
++      result = MPEG4GenericRTPSink::createNew(envir(), rtpGroupsock,
++					      rtpPayloadTypeIfDynamic,
++					      track->samplingFrequency,
++					      "audio", "AAC-hbr", configStr,
++					      track->numChannels);
++      delete[] configStr;
++    } else if (strcmp(track->mimeType, "audio/AC3") == 0) {
++      result = AC3AudioRTPSink
++	::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, track->samplingFrequency);
++    } else if (strcmp(track->mimeType, "audio/OPUS") == 0) {
++      result = SimpleRTPSink
++	::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
++		    48000, "audio", "OPUS", 2, False/*only 1 Opus 'packet' in each RTP packet*/);
++    } else if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "video/THEORA") == 0) {
++      u_int8_t* identificationHeader; unsigned identificationHeaderSize;
++      u_int8_t* commentHeader; unsigned commentHeaderSize;
++      u_int8_t* setupHeader; unsigned setupHeaderSize;
++      getVorbisOrTheoraConfigData(track,
++				  identificationHeader, identificationHeaderSize,
++				  commentHeader, commentHeaderSize,
++				  setupHeader, setupHeaderSize);
++
++      if (strcmp(track->mimeType, "video/THEORA") == 0) {
++	result = TheoraVideoRTPSink
++	  ::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
++		      identificationHeader, identificationHeaderSize,
++		      commentHeader, commentHeaderSize,
++		      setupHeader, setupHeaderSize);
++      } else { // Vorbis
++	result = VorbisAudioRTPSink
++	  ::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
++		      track->samplingFrequency, track->numChannels,
++		      identificationHeader, identificationHeaderSize,
++		      commentHeader, commentHeaderSize,
++		      setupHeader, setupHeaderSize);
++      }
++      delete[] identificationHeader; delete[] commentHeader; delete[] setupHeader;
++    } else if (strcmp(track->mimeType, "video/RAW") == 0) {
++      result = RawVideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic, 
++                                          track->pixelWidth, track->pixelHeight, track->bitDepth, track->colorSampling, track->colorimetry);
++    } else if (strcmp(track->mimeType, "video/H264") == 0) {
++      u_int8_t* sps; unsigned spsSize;
++      u_int8_t* pps; unsigned ppsSize;
++
++      getH264ConfigData(track, sps, spsSize, pps, ppsSize);
++      result = H264VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
++					   sps, spsSize, pps, ppsSize);
++      delete[] sps; delete[] pps;
++    } else if (strcmp(track->mimeType, "video/H265") == 0) {
++      u_int8_t* vps; unsigned vpsSize;
++      u_int8_t* sps; unsigned spsSize;
++      u_int8_t* pps; unsigned ppsSize;
++
++      getH265ConfigData(track, vps, vpsSize, sps, spsSize, pps, ppsSize);
++      result = H265VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic,
++					   vps, vpsSize, sps, spsSize, pps, ppsSize);
++      delete[] vps; delete[] sps; delete[] pps;
++    } else if (strcmp(track->mimeType, "video/VP8") == 0) {
++      result = VP8VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
++    } else if (strcmp(track->mimeType, "video/VP9") == 0) {
++      result = VP9VideoRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
++    } else if (strcmp(track->mimeType, "text/T140") == 0) {
++      result = T140TextRTPSink::createNew(envir(), rtpGroupsock, rtpPayloadTypeIfDynamic);
++    }
++  } while (0);
++
++  return result;
++}
++
++FileSink* MatroskaFile::createFileSinkForTrackNumber(unsigned trackNumber, char const* fileName) {
++  FileSink* result = NULL; // default value, if an error occurs
++  Boolean createOggFileSink = False; // by default
++
++  do {
++    MatroskaTrack* track = lookup(trackNumber);
++    if (track == NULL) break;
++
++    if (strcmp(track->mimeType, "video/H264") == 0) {
++      u_int8_t* sps; unsigned spsSize;
++      u_int8_t* pps; unsigned ppsSize;
++
++      getH264ConfigData(track, sps, spsSize, pps, ppsSize);
++
++      char* sps_base64 = base64Encode((char*)sps, spsSize);
++      char* pps_base64 = base64Encode((char*)pps, ppsSize);
++      delete[] sps; delete[] pps;
++
++      char* sPropParameterSetsStr
++	= new char[(sps_base64 == NULL ? 0 : strlen(sps_base64)) +
++		   (pps_base64 == NULL ? 0 : strlen(pps_base64)) +
++		   10 /*more than enough space*/];
++      snprintf(sPropParameterSetsStr, sizeof(sPropParameterSetsStr), "%s,%s", sps_base64, pps_base64);
++      delete[] sps_base64; delete[] pps_base64;
++
++      result = H264VideoFileSink::createNew(envir(), fileName,
++					    sPropParameterSetsStr,
++					    MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
++      delete[] sPropParameterSetsStr;
++    } else if (strcmp(track->mimeType, "video/H265") == 0) {
++      u_int8_t* vps; unsigned vpsSize;
++      u_int8_t* sps; unsigned spsSize;
++      u_int8_t* pps; unsigned ppsSize;
++
++      getH265ConfigData(track, vps, vpsSize, sps, spsSize, pps, ppsSize);
++
++      char* vps_base64 = base64Encode((char*)vps, vpsSize);
++      char* sps_base64 = base64Encode((char*)sps, spsSize);
++      char* pps_base64 = base64Encode((char*)pps, ppsSize);
++      delete[] vps; delete[] sps; delete[] pps;
++
++      result = H265VideoFileSink::createNew(envir(), fileName,
++					    vps_base64, sps_base64, pps_base64,
++					    MAX_KEY_FRAME_SIZE); // extra large buffer size for large key frames
++      delete[] vps_base64; delete[] sps_base64; delete[] pps_base64;
++    } else if (strcmp(track->mimeType, "video/THEORA") == 0) {
++      createOggFileSink = True;
++    } else if (strcmp(track->mimeType, "audio/AMR") == 0 ||
++	       strcmp(track->mimeType, "audio/AMR-WB") == 0) {
++      // For AMR audio streams, we use a special sink that inserts AMR frame hdrs:
++      result = AMRAudioFileSink::createNew(envir(), fileName);
++    } else if (strcmp(track->mimeType, "audio/VORBIS") == 0 ||
++	       strcmp(track->mimeType, "audio/OPUS") == 0) {
++      createOggFileSink = True;
++    }
++
++    if (createOggFileSink) {
++      char* configStr = NULL; // by default
++
++      if (strcmp(track->mimeType, "audio/VORBIS") == 0 || strcmp(track->mimeType, "video/THEORA") == 0) {
++	u_int8_t* identificationHeader; unsigned identificationHeaderSize;
++	u_int8_t* commentHeader; unsigned commentHeaderSize;
++	u_int8_t* setupHeader; unsigned setupHeaderSize;
++	getVorbisOrTheoraConfigData(track,
++				    identificationHeader, identificationHeaderSize,
++				    commentHeader, commentHeaderSize,
++				    setupHeader, setupHeaderSize);
++	u_int32_t identField = 0xFACADE; // Can we get a real value from the file somehow?
++	configStr = generateVorbisOrTheoraConfigStr(identificationHeader, identificationHeaderSize,
++						    commentHeader, commentHeaderSize,
++						    setupHeader, setupHeaderSize,
++						    identField);
++	delete[] identificationHeader; delete[] commentHeader; delete[] setupHeader;
++      }
++
++      result = OggFileSink::createNew(envir(), fileName, track->samplingFrequency, configStr, MAX_KEY_FRAME_SIZE);
++      delete[] configStr;
++    } else if (result == NULL) {
++      // By default, just create a regular "FileSink":
++      result = FileSink::createNew(envir(), fileName, MAX_KEY_FRAME_SIZE);
++    }
++  } while (0);
++
++  return result;
++}
++
++void MatroskaFile::addTrack(MatroskaTrack* newTrack, unsigned trackNumber) {
++  fTrackTable->add(newTrack, trackNumber);
++}
++
++void MatroskaFile::addCuePoint(double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster) {
++  Boolean dummy = False; // not used
++  CuePoint::addCuePoint(fCuePoints, cueTime, clusterOffsetInFile, blockNumWithinCluster, dummy);
++}
++
++Boolean MatroskaFile::lookupCuePoint(double& cueTime, u_int64_t& resultClusterOffsetInFile, unsigned& resultBlockNumWithinCluster) {
++  if (fCuePoints == NULL) return False;
++
++  (void)fCuePoints->lookup(cueTime, resultClusterOffsetInFile, resultBlockNumWithinCluster);
++  return True;
++}
++
++void MatroskaFile::printCuePoints(FILE* fid) {
++  CuePoint::fprintf(fid, fCuePoints);
++}
++
++
++////////// MatroskaTrackTable implementation //////////
++
++MatroskaTrackTable::MatroskaTrackTable()
++  : fTable(HashTable::create(ONE_WORD_HASH_KEYS)) {
++}
++
++MatroskaTrackTable::~MatroskaTrackTable() {
++  // Remove and delete all of our "MatroskaTrack" descriptors, and the hash table itself:
++  MatroskaTrack* track;
++  while ((track = (MatroskaTrack*)fTable->RemoveNext()) != NULL) {
++    delete track;
++  }
++  delete fTable;
++} 
++
++void MatroskaTrackTable::add(MatroskaTrack* newTrack, unsigned trackNumber) {
++  if (newTrack != NULL && newTrack->trackNumber != 0) fTable->Remove((char const*)newTrack->trackNumber);
++  MatroskaTrack* existingTrack = (MatroskaTrack*)fTable->Add((char const*)trackNumber, newTrack);
++  delete existingTrack; // in case it wasn't NULL
++}
++
++MatroskaTrack* MatroskaTrackTable::lookup(unsigned trackNumber) {
++  return (MatroskaTrack*)fTable->Lookup((char const*)trackNumber);
++}
++
++unsigned MatroskaTrackTable::numTracks() const { return fTable->numEntries(); }
++
++MatroskaTrackTable::Iterator::Iterator(MatroskaTrackTable& ourTable) {
++  fIter = HashTable::Iterator::create(*(ourTable.fTable));
++}
++
++MatroskaTrackTable::Iterator::~Iterator() {
++  delete fIter;
++}
++
++MatroskaTrack* MatroskaTrackTable::Iterator::next() {
++  char const* key;
++  return (MatroskaTrack*)fIter->next(key);
++}
++
++
++////////// MatroskaTrack implementation //////////
++
++MatroskaTrack::MatroskaTrack()
++  : trackNumber(0/*not set*/), trackType(0/*unknown*/),
++    isEnabled(True), isDefault(True), isForced(False),
++    defaultDuration(0),
++    name(NULL), language(NULL), codecID(NULL),
++    samplingFrequency(0), numChannels(2), mimeType(""),
++    codecPrivateSize(0), codecPrivate(NULL),
++    codecPrivateUsesH264FormatForH265(False), codecIsOpus(False),
++    headerStrippedBytesSize(0), headerStrippedBytes(NULL),
++    colorSampling(""), colorimetry("BT709-2") /*Matroska default value for Primaries */,
++    pixelWidth(0), pixelHeight(0), bitDepth(8), subframeSizeSize(0) {
++}
++
++MatroskaTrack::~MatroskaTrack() {
++  delete[] name; delete[] language; delete[] codecID;
++  delete[] codecPrivate;
++  delete[] headerStrippedBytes;
++}
++
++
++////////// MatroskaDemux implementation //////////
++
++MatroskaDemux::MatroskaDemux(MatroskaFile& ourFile)
++  : Medium(ourFile.envir()),
++    fOurFile(ourFile), fDemuxedTracksTable(HashTable::create(ONE_WORD_HASH_KEYS)),
++    fNextTrackTypeToCheck(0x1) {
++  fOurParser = new MatroskaFileParser(ourFile, ByteStreamFileSource::createNew(envir(), ourFile.fileName()),
++				      handleEndOfFile, this, this);
++}
++
++MatroskaDemux::~MatroskaDemux() {
++  // Begin by acting as if we've reached the end of the source file.  This should cause all of our demuxed tracks to get closed.
++  handleEndOfFile();
++
++  // Then delete our table of "MatroskaDemuxedTrack"s
++  // - but not the "MatroskaDemuxedTrack"s themselves; that should have already happened:
++  delete fDemuxedTracksTable;
++
++  delete fOurParser;
++  fOurFile.removeDemux(this);
++}
++
++FramedSource* MatroskaDemux::newDemuxedTrack() {
++  unsigned dummyResultTrackNumber;
++  return newDemuxedTrack(dummyResultTrackNumber);
++}
++
++FramedSource* MatroskaDemux::newDemuxedTrack(unsigned& resultTrackNumber) {
++  FramedSource* result;
++  resultTrackNumber = 0;
++
++  for (result = NULL; result == NULL && fNextTrackTypeToCheck != MATROSKA_TRACK_TYPE_OTHER;
++       fNextTrackTypeToCheck <<= 1) {
++    if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_VIDEO) resultTrackNumber = fOurFile.chosenVideoTrackNumber();
++    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_AUDIO) resultTrackNumber = fOurFile.chosenAudioTrackNumber();
++    else if (fNextTrackTypeToCheck == MATROSKA_TRACK_TYPE_SUBTITLE) resultTrackNumber = fOurFile.chosenSubtitleTrackNumber();
++
++    result = newDemuxedTrackByTrackNumber(resultTrackNumber);
++  }
++
++  return result;
++}
++
++FramedSource* MatroskaDemux::newDemuxedTrackByTrackNumber(unsigned trackNumber) {
++  if (trackNumber == 0) return NULL;
++
++  FramedSource* trackSource = new MatroskaDemuxedTrack(envir(), trackNumber, *this);
++  fDemuxedTracksTable->Add((char const*)trackNumber, trackSource);
++  return trackSource;
++}
++
++MatroskaDemuxedTrack* MatroskaDemux::lookupDemuxedTrack(unsigned trackNumber) {
++  return (MatroskaDemuxedTrack*)fDemuxedTracksTable->Lookup((char const*)trackNumber);
++}
++
++void MatroskaDemux::removeTrack(unsigned trackNumber) {
++  if (fOurParser != NULL) fOurParser->stopAnyDeliveryForTrack(trackNumber);
++
++  fDemuxedTracksTable->Remove((char const*)trackNumber);
++  if (fDemuxedTracksTable->numEntries() == 0) {
++    // We no longer have any demuxed tracks, so delete ourselves now:
++    Medium::close(this);
++  }
++}
++
++void MatroskaDemux::continueReading() {
++  fOurParser->continueParsing();  
++}
++
++void MatroskaDemux::seekToTime(double& seekNPT) {
++  if (fOurParser != NULL) fOurParser->seekToTime(seekNPT);
++}
++
++void MatroskaDemux::pause() {
++  if (fOurParser != NULL) fOurParser->pause();
++}
++
++void MatroskaDemux::handleEndOfFile(void* clientData) {
++  ((MatroskaDemux*)clientData)->handleEndOfFile();
++}
++
++void MatroskaDemux::handleEndOfFile() {
++  // Iterate through all of our 'demuxed tracks', handling 'end of input' on each one.
++  // Hack: Because this can cause the hash table to get modified underneath us, we don't call the handlers until after we've
++  // first iterated through all of the tracks.
++  unsigned numTracks = fDemuxedTracksTable->numEntries();
++  if (numTracks == 0) return;
++  MatroskaDemuxedTrack** tracks = new MatroskaDemuxedTrack*[numTracks];
++
++  HashTable::Iterator* iter = HashTable::Iterator::create(*fDemuxedTracksTable);
++  unsigned i;
++  char const* trackNumber;
++
++  for (i = 0; i < numTracks; ++i) {
++    tracks[i] = (MatroskaDemuxedTrack*)iter->next(trackNumber);
++  }
++  delete iter;
++
++  for (i = 0; i < numTracks; ++i) {
++    if (tracks[i] == NULL) continue; // sanity check; shouldn't happen
++    tracks[i]->handleClosure();
++  }
++
++  delete[] tracks;
++}
++
++void MatroskaDemux::resetState() {
++  // Iterate through all of our 'demuxed tracks', calling 'reset()' on each one.
++  HashTable::Iterator* iter = HashTable::Iterator::create(*fDemuxedTracksTable);
++  MatroskaDemuxedTrack* demuxedTrack;
++  char const* trackNumber;
++
++  while ((demuxedTrack = (MatroskaDemuxedTrack*)iter->next(trackNumber)) != NULL) {
++    demuxedTrack->reset();
++  }
++  delete iter;
++}
++
++
++////////// CuePoint implementation //////////
++
++CuePoint::CuePoint(double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster)
++  : fBalance(0),
++    fCueTime(cueTime), fClusterOffsetInFile(clusterOffsetInFile), fBlockNumWithinCluster(blockNumWithinCluster - 1) {
++  fSubTree[0] = fSubTree[1] = NULL;
++}
++
++CuePoint::~CuePoint() {
++  delete fSubTree[0]; delete fSubTree[1];
++}
++
++void CuePoint::addCuePoint(CuePoint*& root, double cueTime, u_int64_t clusterOffsetInFile, unsigned blockNumWithinCluster,
++			   Boolean& needToReviseBalanceOfParent) {
++  needToReviseBalanceOfParent = False; // by default; may get changed below
++
++  if (root == NULL) {
++    root = new CuePoint(cueTime, clusterOffsetInFile, blockNumWithinCluster);
++    needToReviseBalanceOfParent = True;
++  } else if (cueTime == root->fCueTime) {
++    // Replace existing data:
++    root->fClusterOffsetInFile = clusterOffsetInFile;
++    root->fBlockNumWithinCluster = blockNumWithinCluster - 1;
++  } else {
++    // Add to our left or right subtree:
++    int direction = cueTime > root->fCueTime; // 0 (left) or 1 (right)
++    Boolean needToReviseOurBalance = False;
++    addCuePoint(root->fSubTree[direction], cueTime, clusterOffsetInFile, blockNumWithinCluster, needToReviseOurBalance);
++
++    if (needToReviseOurBalance) {
++      // We need to change our 'balance' number, perhaps while also performing a rotation to bring ourself back into balance:
++      if (root->fBalance == 0) {
++	// We were balanced before, but now we're unbalanced (by 1) on the "direction" side:
++	root->fBalance = -1 + 2*direction; // -1 for "direction" 0; 1 for "direction" 1
++	needToReviseBalanceOfParent = True;
++      } else if (root->fBalance == 1 - 2*direction) { // 1 for "direction" 0; -1 for "direction" 1
++	// We were unbalanced (by 1) on the side opposite to where we added an entry, so now we're balanced:
++	root->fBalance = 0;
++      } else {
++	// We were unbalanced (by 1) on the side where we added an entry, so now we're unbalanced by 2, and have to rebalance:
++	if (root->fSubTree[direction]->fBalance == -1 + 2*direction) { // -1 for "direction" 0; 1 for "direction" 1
++	  // We're 'doubly-unbalanced' on this side, so perform a single rotation in the opposite direction:
++	  root->fBalance = root->fSubTree[direction]->fBalance = 0;
++	  rotate(1-direction, root);
++	} else {
++	  // This is the Left-Right case (for "direction" 0) or the Right-Left case (for "direction" 1); perform two rotations:
++	  char newParentCurBalance = root->fSubTree[direction]->fSubTree[1-direction]->fBalance;
++	  if (newParentCurBalance == 1 - 2*direction) { // 1 for "direction" 0; -1 for "direction" 1
++	    root->fBalance = 0;
++	    root->fSubTree[direction]->fBalance = -1 + 2*direction; // -1 for "direction" 0; 1 for "direction" 1
++	  } else if (newParentCurBalance == 0) {
++	    root->fBalance = 0;
++	    root->fSubTree[direction]->fBalance = 0;
++	  } else {
++	    root->fBalance = 1 - 2*direction; // 1 for "direction" 0; -1 for "direction" 1
++	    root->fSubTree[direction]->fBalance = 0;
++	  }
++	  rotate(direction, root->fSubTree[direction]);
++
++	  root->fSubTree[direction]->fBalance = 0; // the new root will be balanced
++	  rotate(1-direction, root);
++	}
++      }
++    }
++  }
++}
++
++Boolean CuePoint::lookup(double& cueTime, u_int64_t& resultClusterOffsetInFile, unsigned& resultBlockNumWithinCluster) {
++  if (cueTime < fCueTime) {
++    if (left() == NULL) {
++      resultClusterOffsetInFile = 0;
++      resultBlockNumWithinCluster = 0;
++      return False;
++    } else {
++      return left()->lookup(cueTime, resultClusterOffsetInFile, resultBlockNumWithinCluster);
++    }
++  } else {
++    if (right() == NULL || !right()->lookup(cueTime, resultClusterOffsetInFile, resultBlockNumWithinCluster)) {
++      // Use this record:
++      cueTime = fCueTime;
++      resultClusterOffsetInFile = fClusterOffsetInFile;
++      resultBlockNumWithinCluster = fBlockNumWithinCluster;
++    }
++    return True;
++  }
++}
++
++void CuePoint::fprintf(FILE* fid, CuePoint* cuePoint) {
++  if (cuePoint != NULL) {
++    ::fprintf(fid, "[");
++    fprintf(fid, cuePoint->left());
++
++    ::fprintf(fid, ",%.1f{%d},", cuePoint->fCueTime, cuePoint->fBalance);
++
++    fprintf(fid, cuePoint->right());
++    ::fprintf(fid, "]");
++  }
++}
++
++void CuePoint::rotate(unsigned direction/*0 => left; 1 => right*/, CuePoint*& root) {
++  CuePoint* pivot = root->fSubTree[1-direction]; // ASSERT: pivot != NULL
++  root->fSubTree[1-direction] = pivot->fSubTree[direction];
++  pivot->fSubTree[direction] = root;
++  root = pivot;
++}
+diff -Naur live.step3/liveMedia/Media.cpp live/liveMedia/Media.cpp
+--- live.step3/liveMedia/Media.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/Media.cpp	2025-11-30 15:11:52.705220986 +0900
+@@ -154,9 +154,9 @@
+ }
+ 
+ void MediaLookupTable::generateNewName(char* mediumName,
+-				       unsigned /*maxLen*/) {
++				       unsigned maxLen) {
+   // We should really use snprintf() here, but not all systems have it
+-  sprintf(mediumName, "liveMedia%d", fNameGenerator++);
++  snprintf(mediumName, maxLen, "liveMedia%d", fNameGenerator++);
+ }
+ 
+ MediaLookupTable::MediaLookupTable(UsageEnvironment& env)
+diff -Naur live.step3/liveMedia/MediaSession.cpp live/liveMedia/MediaSession.cpp
+--- live.step3/liveMedia/MediaSession.cpp	2025-11-30 15:19:48.724247165 +0900
++++ live/liveMedia/MediaSession.cpp	2025-11-30 15:11:52.701220915 +0900
+@@ -239,7 +239,7 @@
+ 			      subsession->fNumChannels);
+       if (subsession->fCodecName == NULL) {
+ 	char typeStr[20];
+-	sprintf(typeStr, "%d", subsession->fRTPPayloadFormat);
++	snprintf(typeStr, sizeof(typeStr), "%d", subsession->fRTPPayloadFormat);
+ 	envir().setResultMsg("Unknown codec name for RTP payload type ",
+ 			     typeStr);
+ 	return False;
+@@ -1424,7 +1424,7 @@
+ 	// <http://developer.apple.com/quicktime/icefloe/dispatch026.html>
+ 	char* mimeType
+ 	  = new char[strlen(mediumName()) + strlen(codecName()) + 2] ;
+-	sprintf(mimeType, "%s/%s", mediumName(), codecName());
++	snprintf(mimeType, sizeof(mimeType), "%s/%s", mediumName(), codecName());
+ 	fReadSource = fRTPSource
+ 	  = QuickTimeGenericRTPSource::createNew(env(), fRTPSocket,
+ 						 fRTPPayloadFormat,
+@@ -1471,7 +1471,7 @@
+       if (createSimpleRTPSource) {
+ 	char* mimeType
+ 	  = new char[strlen(mediumName()) + strlen(codecName()) + 2] ;
+-	sprintf(mimeType, "%s/%s", mediumName(), codecName());
++	snprintf(mimeType, sizeof(mimeType), "%s/%s", mediumName(), codecName());
+ 	fReadSource = fRTPSource
+ 	  = SimpleRTPSource::createNew(env(), fRTPSocket, fRTPPayloadFormat,
+ 				       fRTPTimestampFrequency, mimeType,
+diff -Naur live.step3/liveMedia/OnDemandServerMediaSubsession.cpp live/liveMedia/OnDemandServerMediaSubsession.cpp
+--- live.step3/liveMedia/OnDemandServerMediaSubsession.cpp	2025-11-30 15:19:48.724247165 +0900
++++ live/liveMedia/OnDemandServerMediaSubsession.cpp	2025-11-30 15:11:52.714221146 +0900
+@@ -490,7 +490,7 @@
+     + strlen(auxSDPLine)
+     + strlen(trackId());
+   char* sdpLines = new char[sdpFmtSize];
+-  sprintf(sdpLines, sdpFmt,
++  snprintf(sdpLines, sdpFmtSize, sdpFmt,
+ 	  mediaType, // m= <media>
+ 	  portNumForSDP, // m= <port>
+ 	  fParentSession->streamingUsesSRTP ? "S" : "",
+diff -Naur live.step3/liveMedia/PassiveServerMediaSubsession.cpp live/liveMedia/PassiveServerMediaSubsession.cpp
+--- live.step3/liveMedia/PassiveServerMediaSubsession.cpp	2025-11-30 15:19:48.725247206 +0900
++++ live/liveMedia/PassiveServerMediaSubsession.cpp	2025-11-30 15:11:52.714221146 +0900
+@@ -121,7 +121,7 @@
+       + strlen(auxSDPLine)
+       + strlen(trackId());
+     char* sdpLines = new char[sdpFmtSize];
+-    sprintf(sdpLines, sdpFmt,
++    snprintf(sdpLines, sdpFmtSize, sdpFmt,
+ 	    mediaType, // m= <media>
+ 	    portNum, // m= <port>
+ 	    fParentSession->streamingUsesSRTP ? "S" : "",
+diff -Naur live.step3/liveMedia/QuickTimeFileSink.cpp live/liveMedia/QuickTimeFileSink.cpp
+--- live.step3/liveMedia/QuickTimeFileSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/QuickTimeFileSink.cpp	2025-11-30 15:11:52.714221146 +0900
+@@ -2310,7 +2310,7 @@
+ 
+ addAtom(name);
+   char description[100];
+-  sprintf(description, "Hinted %s track",
++  snprintf(description, sizeof(description), "Hinted %s track",
+ 	  fCurrentIOState->fOurSubsession.mediumName());
+   size += addArbitraryString(description, False); // name of object
+ addAtomEnd;
+@@ -2327,7 +2327,8 @@
+   char const* sdpLines = fCurrentIOState->fOurSubsession.savedSDPLines();
+   // We need to change any "a=control:trackID=" values to be this
+   // track's actual track id:
+-  char* newSDPLines = new char[strlen(sdpLines)+100/*overkill*/];
++  unsigned const newSDPLinesSize = strlen(sdpLines)+100/*overkill*/;
++  char* newSDPLines = new char[newSDPLinesSize];
+   char const* searchStr = "a=control:trackid=";
+   Boolean foundSearchString = False;
+   char const *p1, *p2, *p3;
+@@ -2344,7 +2345,7 @@
+       // Replace the old track number with the correct one:
+       int i;
+       for (i = 0; i < beforeTrackNumPosn; ++i) newSDPLines[i] = sdpLines[i];
+-      sprintf(&newSDPLines[i], "%d", fCurrentIOState->fTrackID);
++      snprintf(&newSDPLines[i], 12, "%d", fCurrentIOState->fTrackID); // max 10 digits + sign + null
+       i = afterTrackNumPosn;
+       int j = i + strlen(&newSDPLines[i]);
+       while (1) {
+@@ -2360,7 +2361,7 @@
+   if (!foundSearchString) {
+     // Because we didn't find a "a=control:trackID=<trackId>" line,
+     // add one of our own:
+-    sprintf(newSDPLines, "%s%s%d\r\n",
++    snprintf(newSDPLines, newSDPLinesSize, "%s%s%d\r\n",
+ 	    sdpLines, searchStr, fCurrentIOState->fTrackID);
+   }
+ 
+@@ -2453,7 +2454,7 @@
+     // Also, add a 'rtpmap' string: <mime-subtype>/<rtp-frequency>
+     unsigned rtpmapStringLength = strlen(ourSubsession.codecName()) + 20;
+     char* rtpmapString = new char[rtpmapStringLength];
+-    sprintf(rtpmapString, "%s/%d",
++    snprintf(rtpmapString, sizeof(rtpmapString), "%s/%d",
+ 	    ourSubsession.codecName(), rtpSource->timestampFrequency());
+     size += addArbitraryString(rtpmapString);
+     delete[] rtpmapString;
+diff -Naur live.step3/liveMedia/RTPSink.cpp live/liveMedia/RTPSink.cpp
+--- live.step3/liveMedia/RTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/RTPSink.cpp	2025-11-30 15:11:52.714221146 +0900
+@@ -74,8 +74,9 @@
+   if (rtpPayloadType() >= 96) { // the payload format type is dynamic
+     char* encodingParamsPart;
+     if (numChannels() != 1) {
+-      encodingParamsPart = new char[1 + 20 /* max int len */];
+-      sprintf(encodingParamsPart, "/%d", numChannels());
++      unsigned const encodingParamsPartSize = 1 + 20 /* max int len */;
++      encodingParamsPart = new char[encodingParamsPartSize];
++      snprintf(encodingParamsPart, encodingParamsPartSize, "/%d", numChannels());
+     } else {
+       encodingParamsPart = strDup("");
+     }
+@@ -84,7 +85,7 @@
+       + 3 /* max char len */ + strlen(rtpPayloadFormatName())
+       + 20 /* max int len */ + strlen(encodingParamsPart);
+     char* rtpmapLine = new char[rtpmapLineSize];
+-    sprintf(rtpmapLine, rtpmapFmt,
++    snprintf(rtpmapLine, rtpmapLineSize, rtpmapFmt,
+ 	    rtpPayloadType(), rtpPayloadFormatName(),
+ 	    rtpTimestampFrequency(), encodingParamsPart);
+     delete[] encodingParamsPart;
+@@ -107,7 +108,7 @@
+     
+     unsigned keyMgmtLineSize = strlen(keyMgmtFmt) + strlen(base64EncodedData);
+     char* keyMgmtLine = new char[keyMgmtLineSize];
+-    sprintf(keyMgmtLine, keyMgmtFmt, base64EncodedData);
++    snprintf(keyMgmtLine, keyMgmtLineSize, keyMgmtFmt, base64EncodedData);
+     delete[] base64EncodedData;
+ 
+     return keyMgmtLine;
+diff -Naur live.step3/liveMedia/RTSPClient.cpp live/liveMedia/RTSPClient.cpp
+--- live.step3/liveMedia/RTSPClient.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/RTSPClient.cpp	2025-11-30 15:11:52.715221164 +0900
+@@ -129,7 +129,7 @@
+                                              Authenticator* authenticator) {
+   if (fCurrentAuthenticator < authenticator) fCurrentAuthenticator = *authenticator;
+   char* paramString = new char[strlen(parameterName) + strlen(parameterValue) + 10];
+-  sprintf(paramString, "%s: %s\r\n", parameterName, parameterValue);
++  snprintf(paramString, sizeof(paramString), "%s: %s\r\n", parameterName, parameterValue);
+   unsigned result = sendRequest(new RequestRecord(++fCSeq, "SET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
+   delete[] paramString;
+   return result;
+@@ -147,7 +147,7 @@
+   if (parameterName == NULL || parameterName[0] == '\0') {
+     paramString[0] = '\0';
+   } else {
+-    sprintf(paramString, "%s\r\n", parameterName);
++    snprintf(paramString, sizeof(paramString), "%s\r\n", parameterName);
+   }
+   unsigned result = sendRequest(new RequestRecord(++fCSeq, "GET_PARAMETER", responseHandler, &session, NULL, False, 0.0, 0.0, 0.0, paramString));
+   delete[] paramString;
+@@ -384,7 +384,7 @@
+   unsigned const headerSize = strlen(formatStr) + strlen(userAgentName);
+   delete[] fUserAgentHeaderStr;
+   fUserAgentHeaderStr = new char[headerSize];
+-  sprintf(fUserAgentHeaderStr, formatStr, userAgentName);
++  snprintf(fUserAgentHeaderStr, headerSize, formatStr, userAgentName);
+   fUserAgentHeaderStrLen = strlen(fUserAgentHeaderStr);
+ }
+ 
+@@ -429,7 +429,7 @@
+   unsigned userAgentNameSize
+     = strlen(applicationName) + strlen(libPrefix) + strlen(libName) + strlen(liveMediaLibraryVersionStr) + strlen(libSuffix) + 1;
+   char* userAgentName = new char[userAgentNameSize];
+-  sprintf(userAgentName, "%s%s%s%s%s", applicationName, libPrefix, libName, liveMediaLibraryVersionStr, libSuffix);
++  snprintf(userAgentName, userAgentNameSize, "%s%s%s%s%s", applicationName, libPrefix, libName, liveMediaLibraryVersionStr, libSuffix);
+   setUserAgentString(userAgentName);
+   delete[] userAgentName;
+ }
+@@ -526,7 +526,7 @@
+       unsigned contentLengthHeaderSize = strlen(contentLengthHeaderFmt)
+ 	+ 20 /* max int len */;
+       contentLengthHeader = new char[contentLengthHeaderSize];
+-      sprintf(contentLengthHeader, contentLengthHeaderFmt, contentStrLen);
++      snprintf(contentLengthHeader, contentLengthHeaderSize, contentLengthHeaderFmt, contentStrLen);
+       contentLengthHeaderWasAllocated = True;
+     }
+ 
+@@ -552,7 +552,7 @@
+       + strlen(contentLengthHeader)
+       + contentStrLen;
+     cmd = new char[cmdSize];
+-    sprintf(cmd, cmdFmt,
++    snprintf(cmd, cmdSize, cmdFmt,
+ 	    request->commandName(), cmdURL, protocolStr,
+ 	    request->cseq(),
+ 	    authenticatorStr,
+@@ -581,7 +581,7 @@
+       char const* errFmt = "%s write() failed: ";
+       unsigned const errLength = strlen(errFmt) + strlen(request->commandName());
+       char* err = new char[errLength];
+-      sprintf(err, errFmt, request->commandName());
++      snprintf(err, errLength, errFmt, request->commandName());
+       envir().setResultErrMsg(err);
+       delete[] err;
+       break;
+@@ -612,7 +612,7 @@
+   char* sessionStr;
+   if (sessionId != NULL) {
+     sessionStr = new char[20+strlen(sessionId)];
+-    sprintf(sessionStr, "Session: %s\r\n", sessionId);
++    snprintf(sessionStr, 20+strlen(sessionId), "Session: %s\r\n", sessionId);
+   } else {
+     sessionStr = strDup("");
+   }
+@@ -626,7 +626,7 @@
+     // This is the default value; we don't need a "Speed:" header:
+     buf[0] = '\0';
+   } else {
+-    sprintf(buf, "Speed: %.3f\r\n",speed);
++    snprintf(buf, sizeof(buf), "Speed: %.3f\r\n",speed);
+   }
+ 
+   return strDup(buf);
+@@ -639,7 +639,7 @@
+     buf[0] = '\0';
+   } else {
+     Locale l("C", Numeric);
+-    sprintf(buf, "Scale: %f\r\n", scale);
++    snprintf(buf, sizeof(buf), "Scale: %f\r\n", scale);
+   }
+ 
+   return strDup(buf);
+@@ -667,11 +667,11 @@
+     } else if (end < 0) {
+       // There's no end time:
+       Locale l("C", Numeric);
+-      sprintf(buf, "Range: npt=%.3f-\r\n", start);
++      snprintf(buf, sizeof(buf), "Range: npt=%.3f-\r\n", start);
+     } else {
+       // There's both a start and an end time; include them both in the "Range:" hdr
+       Locale l("C", Numeric);
+-      sprintf(buf, "Range: npt=%.3f-%.3f\r\n", start, end);
++      snprintf(buf, sizeof(buf), "Range: npt=%.3f-%.3f\r\n", start, end);
+     }
+   }
+ 
+@@ -715,7 +715,7 @@
+     
+     cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
+     cmdURLWasAllocated = True;
+-    sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
++    snprintf(cmdURL, sizeof(cmdURL), "%s%s%s", prefix, separator, suffix);
+     
+     // Construct a "Transport:" header.
+     char const* transportTypeStr;
+@@ -747,7 +747,7 @@
+     unsigned transportSize = strlen(transportFmt)
+       + strlen(transportTypeStr) + strlen(modeStr) + strlen(portTypeStr) + 2*5 /* max port len */;
+     char* transportStr = new char[transportSize];
+-    sprintf(transportStr, transportFmt,
++    snprintf(transportStr, 100+strlen(protocolStr), transportFmt,
+ 	    transportTypeStr, modeStr, portTypeStr, rtpNumber, rtcpNumber);
+     
+     // When sending more than one "SETUP" request, include a "Session:" header in the 2nd and later commands:
+@@ -763,7 +763,7 @@
+     // headers make up the 'extra headers':
+     extraHeaders = new char[transportSize + strlen(sessionStr) + strlen(blocksizeStr) + strlen(keyMgmtStr) + 1];
+     extraHeadersWereAllocated = True;
+-    sprintf(extraHeaders, "%s%s%s%s", transportStr, sessionStr, blocksizeStr, keyMgmtStr);
++    snprintf(extraHeaders, sizeof(extraHeaders), "%s%s%s%s", transportStr, sessionStr, blocksizeStr, keyMgmtStr);
+     delete[] transportStr; delete[] sessionStr; delete[] blocksizeStr; delete[] keyMgmtStr;
+   } else if (strcmp(request->commandName(), "GET") == 0 || strcmp(request->commandName(), "POST") == 0) {
+     // We will be sending a HTTP (not a RTSP) request.
+@@ -807,7 +807,7 @@
+ 	+ strlen(fSessionCookie);
+       extraHeaders = new char[extraHeadersSize];
+       extraHeadersWereAllocated = True;
+-      sprintf(extraHeaders, extraHeadersFmt,
++      snprintf(extraHeaders, extraHeadersSize, extraHeadersFmt,
+ 	      serverAddressString.val(),
+ 	      fSessionCookie);
+     } else { // "POST"
+@@ -824,7 +824,7 @@
+ 	+ strlen(fSessionCookie);
+       extraHeaders = new char[extraHeadersSize];
+       extraHeadersWereAllocated = True;
+-      sprintf(extraHeaders, extraHeadersFmt,
++      snprintf(extraHeaders, extraHeadersSize, extraHeadersFmt,
+ 	      serverAddressString.val(),
+ 	      fSessionCookie);
+     }
+@@ -849,7 +849,7 @@
+       constructSubsessionURL(*request->subsession(), prefix, separator, suffix);
+       cmdURL = new char[strlen(prefix) + strlen(separator) + strlen(suffix) + 1];
+       cmdURLWasAllocated = True;
+-      sprintf(cmdURL, "%s%s%s", prefix, separator, suffix);
++      snprintf(cmdURL, sizeof(cmdURL), "%s%s%s", prefix, separator, suffix);
+       
+       sessionId = request->subsession()->sessionId();
+       originalScale = request->subsession()->scale();
+@@ -865,7 +865,7 @@
+       char* rangeStr = createRangeString(request->start(), request->end(), request->absStartTime(), request->absEndTime());
+       extraHeaders = new char[strlen(sessionStr) + strlen(scaleStr) + strlen(speedStr) + strlen(rangeStr) + 1];
+       extraHeadersWereAllocated = True;
+-      sprintf(extraHeaders, "%s%s%s%s", sessionStr, scaleStr, speedStr, rangeStr);
++      snprintf(extraHeaders, sizeof(extraHeaders), "%s%s%s%s", sessionStr, scaleStr, speedStr, rangeStr);
+       delete[] sessionStr; delete[] scaleStr; delete[] speedStr; delete[] rangeStr;
+     } else {
+       // Create a "Session:" header; this makes up our 'extra headers':
+@@ -987,7 +987,7 @@
+ 	+ strlen(auth.username()) + strlen(auth.realm())
+ 	+ strlen(auth.nonce()) + strlen(url) + strlen(response);
+       authenticatorStr = new char[authBufSize];
+-      sprintf(authenticatorStr, authFmt,
++      snprintf(authenticatorStr, authBufSize, authFmt,
+ 	      auth.username(), auth.realm(),
+ 	      auth.nonce(), url, response);
+       auth.reclaimDigestResponse(response);
+@@ -996,12 +996,12 @@
+ 
+       unsigned usernamePasswordLength = strlen(auth.username()) + 1 + strlen(auth.password());
+       char* usernamePassword = new char[usernamePasswordLength+1];
+-      sprintf(usernamePassword, "%s:%s", auth.username(), auth.password());
++      snprintf(usernamePassword, usernamePasswordLength+1, "%s:%s", auth.username(), auth.password());
+ 
+       char* response = base64Encode(usernamePassword, usernamePasswordLength);
+       unsigned const authBufSize = strlen(authFmt) + strlen(response) + 1;
+       authenticatorStr = new char[authBufSize];
+-      sprintf(authenticatorStr, authFmt, response);
++      snprintf(authenticatorStr, authBufSize, authFmt, response);
+       delete[] response; delete[] usernamePassword;
+     }
+ 
+@@ -1027,7 +1027,7 @@
+ 
+   if (maxPacketSize > 0) {
+     blocksizeStr = new char[25]; // more than enough space
+-    sprintf(blocksizeStr, "Blocksize: %u\r\n", maxPacketSize);
++    snprintf(blocksizeStr, 25, "Blocksize: %u\r\n", maxPacketSize);
+   } else {
+     blocksizeStr = strDup("");
+   }
+@@ -1050,7 +1050,7 @@
+     
+     unsigned keyMgmtSize = strlen(keyMgmtFmt) + strlen(url) + strlen(base64EncodedData);
+     keyMgmtStr = new char[keyMgmtSize];
+-    sprintf(keyMgmtStr, keyMgmtFmt,
++    snprintf(keyMgmtStr, keyMgmtSize, keyMgmtFmt,
+ 	    url, base64EncodedData);
+     delete[] base64EncodedData;
+   }
+@@ -1880,7 +1880,7 @@
+ 	      = (oldBaseURLTail - fBaseURL) + 8/* for "/stream=" */ + strlen(headerParamsStr);
+ 	    char* newBaseURL = new char[newBaseURLLen + 1];
+ 	        // Note: We couldn't use "asprintf()", because some compilers don't support it
+-	    sprintf(newBaseURL, "%.*s/stream=%s",
++	    snprintf(newBaseURL, 100, "%.*s/stream=%s",
+ 		     (int)(oldBaseURLTail - fBaseURL), fBaseURL, headerParamsStr);
+ 	    setBaseURL(newBaseURL);
+ 	    delete[] newBaseURL;
+@@ -1908,7 +1908,7 @@
+ 	unsigned remainingBufferSize = responseBufferSize - fResponseBytesAlreadySeen;
+ 	if (numExtraBytesNeeded > remainingBufferSize) {
+ 	  char tmpBuf[200];
+-	  sprintf(tmpBuf, "Response buffer size (%d) is too small for \"Content-Length:\" %d (need a buffer size of >= %d bytes\n",
++	  snprintf(tmpBuf, sizeof(tmpBuf), "Response buffer size (%d) is too small for \"Content-Length:\" %d (need a buffer size of >= %d bytes\n",
+ 		  responseBufferSize, contentLength, fResponseBytesAlreadySeen + numExtraBytesNeeded);
+ 	  envir().setResultMsg(tmpBuf);
+ 	  break;
+diff -Naur live.step3/liveMedia/RTSPRegisterSender.cpp live/liveMedia/RTSPRegisterSender.cpp
+--- live.step3/liveMedia/RTSPRegisterSender.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/RTSPRegisterSender.cpp	2025-11-30 15:11:52.715221164 +0900
+@@ -34,7 +34,7 @@
+   char const* fakeRTSPURLFmt = "rtsp://%s:%u/";
+   unsigned fakeRTSPURLSize = strlen(fakeRTSPURLFmt) + strlen(remoteClientNameOrAddress) + 5/* max port num len */;
+   char* fakeRTSPURL = new char[fakeRTSPURLSize];
+-  sprintf(fakeRTSPURL, fakeRTSPURLFmt, remoteClientNameOrAddress, remoteClientPortNum);
++  snprintf(fakeRTSPURL, fakeRTSPURLSize, fakeRTSPURLFmt, remoteClientNameOrAddress, remoteClientPortNum);
+   setBaseURL(fakeRTSPURL);
+   delete[] fakeRTSPURL;
+ 
+@@ -118,13 +118,13 @@
+       unsigned proxyURLSuffixParameterSize = strlen(proxyURLSuffixParameterFmt)
+ 	+ strlen(request_REGISTER->proxyURLSuffix());
+       proxyURLSuffixParameterStr = new char[proxyURLSuffixParameterSize];
+-      sprintf(proxyURLSuffixParameterStr, proxyURLSuffixParameterFmt, request_REGISTER->proxyURLSuffix());
++      snprintf(proxyURLSuffixParameterStr, proxyURLSuffixParameterSize, proxyURLSuffixParameterFmt, request_REGISTER->proxyURLSuffix());
+     }
+ 
+     char const* transportHeaderFmt = "Transport: %spreferred_delivery_protocol=%s%s\r\n";
+     unsigned transportHeaderSize = strlen(transportHeaderFmt) + 100/*conservative*/ + strlen(proxyURLSuffixParameterStr);
+     char* transportHeaderStr = new char[transportHeaderSize];
+-    sprintf(transportHeaderStr, transportHeaderFmt,
++    snprintf(transportHeaderStr, transportHeaderSize, transportHeaderFmt,
+ 	    request_REGISTER->reuseConnection() ? "reuse_connection; " : "",
+ 	    request_REGISTER->requestStreamingViaTCP() ? "interleaved" : "udp",
+ 	    proxyURLSuffixParameterStr);
+@@ -198,13 +198,13 @@
+       unsigned proxyURLSuffixParameterSize = strlen(proxyURLSuffixParameterFmt)
+ 	+ strlen(request_DEREGISTER->proxyURLSuffix());
+       proxyURLSuffixParameterStr = new char[proxyURLSuffixParameterSize];
+-      sprintf(proxyURLSuffixParameterStr, proxyURLSuffixParameterFmt, request_DEREGISTER->proxyURLSuffix());
++      snprintf(proxyURLSuffixParameterStr, proxyURLSuffixParameterSize, proxyURLSuffixParameterFmt, request_DEREGISTER->proxyURLSuffix());
+     }
+ 
+     char const* transportHeaderFmt = "Transport: %s\r\n";
+     unsigned transportHeaderSize = strlen(transportHeaderFmt) + strlen(proxyURLSuffixParameterStr);
+     char* transportHeaderStr = new char[transportHeaderSize];
+-    sprintf(transportHeaderStr, transportHeaderFmt,
++    snprintf(transportHeaderStr, transportHeaderSize, transportHeaderFmt,
+ 	    proxyURLSuffixParameterStr);
+     delete[] proxyURLSuffixParameterStr;
+ 
+diff -Naur live.step3/liveMedia/RTSPServer.cpp live/liveMedia/RTSPServer.cpp
+--- live.step3/liveMedia/RTSPServer.cpp	2025-11-30 15:20:00.202715907 +0900
++++ live/liveMedia/RTSPServer.cpp	2025-11-30 15:11:52.715221164 +0900
+@@ -61,8 +61,9 @@
+   char* urlPrefix = rtspURLPrefix(clientSocket, useIPv6);
+   char const* sessionName = serverMediaSession->streamName();
+   
+-  char* resultURL = new char[strlen(urlPrefix) + strlen(sessionName) + 1];
+-  sprintf(resultURL, "%s%s", urlPrefix, sessionName);
++  unsigned const resultURLSize = strlen(urlPrefix) + strlen(sessionName) + 1;
++  char* resultURL = new char[resultURLSize];
++  snprintf(resultURL, resultURLSize, "%s%s", urlPrefix, sessionName);
+   
+   delete[] urlPrefix;
+   return resultURL;
+@@ -95,11 +96,11 @@
+   portNumBits defaultPortNum = fOurConnectionsUseTLS ? 322 : 554;
+   portNumBits portNumHostOrder = ntohs(fServerPort.num());
+   if (portNumHostOrder == defaultPortNum) {
+-    sprintf(urlBuffer, "rtsp%s://%s%s%s/",
++    snprintf(urlBuffer, sizeof(urlBuffer), "rtsp%s://%s%s%s/",
+ 	    fOurConnectionsUseTLS ? "s" : "",
+ 	    addressPrefixInURL, AddressString(ourAddress).val(), addressSuffixInURL);
+   } else {
+-    sprintf(urlBuffer, "rtsp%s://%s%s%s:%hu/",
++    snprintf(urlBuffer, sizeof(urlBuffer), "rtsp%s://%s%s%s:%hu/",
+ 	    fOurConnectionsUseTLS ? "s" : "",
+ 	    addressPrefixInURL, AddressString(ourAddress).val(), addressSuffixInURL, portNumHostOrder);
+   }
+@@ -1404,7 +1405,7 @@
+     streamName = fURLSuffix;
+   } else {
+     concatenatedStreamName = new char[strlen(fURLPreSuffix) + strlen(fURLSuffix) + 2]; // allow for the "/" and the trailing '\0'
+-    sprintf(concatenatedStreamName, "%s/%s", fURLPreSuffix, fURLSuffix);
++    snprintf(concatenatedStreamName, sizeof(concatenatedStreamName), "%s/%s", fURLPreSuffix, fURLSuffix);
+     streamName = concatenatedStreamName;
+   }
+   fTrackId = NULL;
+@@ -1588,7 +1589,7 @@
+     AddressString sourceAddrStr(sourceAddr);
+     char timeoutParameterString[100];
+     if (fOurRTSPServer.fReclamationSeconds > 0) {
+-      sprintf(timeoutParameterString, ";timeout=%u", fOurRTSPServer.fReclamationSeconds);
++      snprintf(timeoutParameterString, sizeof(timeoutParameterString), ";timeout=%u", fOurRTSPServer.fReclamationSeconds);
+     } else {
+       timeoutParameterString[0] = '\0';
+     }
+@@ -1792,7 +1793,7 @@
+   if (!sawScaleHeader) {
+     buf[0] = '\0'; // Because we didn't see a Scale: header, don't send one back
+   } else {
+-    sprintf(buf, "Scale: %f\r\n", scale);
++    snprintf(buf, sizeof(buf), "Scale: %f\r\n", scale);
+   }
+   scaleHeader = strDup(buf);
+   
+@@ -1891,10 +1892,10 @@
+     
+     if (absEnd == NULL) {
+       rangeHeaderBuf = new char[100 + strlen(absStart)]; // ample space
+-      sprintf(rangeHeaderBuf, "Range: clock=%s-\r\n", absStart);
++      snprintf(rangeHeaderBuf, 100+strlen(absStart), "Range: clock=%s-\r\n", absStart);
+     } else {
+       rangeHeaderBuf = new char[100 + strlen(absStart) + strlen(absEnd)]; // ample space
+-      sprintf(rangeHeaderBuf, "Range: clock=%s-%s\r\n", absStart, absEnd);
++      snprintf(rangeHeaderBuf, 100+strlen(absStart), "Range: clock=%s-%s\r\n", absStart, absEnd);
+     }
+     delete[] absStart; delete[] absEnd;
+     rangeHeader = strDup(rangeHeaderBuf);
+@@ -1920,9 +1921,9 @@
+     }
+ 
+     if (rangeEnd == 0.0 && scale >= 0.0) {
+-      sprintf(buf, "Range: npt=%.3f-\r\n", rangeStart);
++      snprintf(buf, sizeof(buf), "Range: npt=%.3f-\r\n", rangeStart);
+     } else {
+-      sprintf(buf, "Range: npt=%.3f-%.3f\r\n", rangeStart, rangeEnd);
++      snprintf(buf, sizeof(buf), "Range: npt=%.3f-%.3f\r\n", rangeStart, rangeEnd);
+     }
+     rangeHeader = strDup(buf);
+   }
+@@ -1949,7 +1950,7 @@
+ 	+ 10 /*max unsigned (32-bit) len*/
+ 	+ 2 /*allows for trailing \r\n at final end of string*/;
+       rtpInfo = new char[rtpInfoSize];
+-      sprintf(rtpInfo, rtpInfoFmt,
++      snprintf(rtpInfo, rtpInfoSize, rtpInfoFmt,
+ 	      prevRTPInfo,
+ 	      numRTPInfoItems++ == 0 ? "" : ",",
+ 	      rtspURL, urlSuffix,
+diff -Naur live.step3/liveMedia/RTSPServer.cpp.orig live/liveMedia/RTSPServer.cpp.orig
+--- live.step3/liveMedia/RTSPServer.cpp.orig	1970-01-01 09:00:00.000000000 +0900
++++ live/liveMedia/RTSPServer.cpp.orig	2025-11-30 15:11:52.706221004 +0900
+@@ -0,0 +1,2029 @@
++/**********
++This library is free software; you can redistribute it and/or modify it under
++the terms of the GNU Lesser General Public License as published by the
++Free Software Foundation; either version 3 of the License, or (at your
++option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
++
++This library is distributed in the hope that it will be useful, but WITHOUT
++ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for
++more details.
++
++You should have received a copy of the GNU Lesser General Public License
++along with this library; if not, write to the Free Software Foundation, Inc.,
++51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
++**********/
++// "liveMedia"
++// Copyright (c) 1996-2025 Live Networks, Inc.  All rights reserved.
++// A RTSP server
++// Implementation
++
++#include "RTSPServer.hh"
++#include <stdint.h>
++#include "RTSPCommon.hh"
++#include "RTSPRegisterSender.hh"
++#include "Base64.hh"
++#include <GroupsockHelper.hh>
++
++////////// RTSPServer implementation //////////
++
++RTSPServer*
++RTSPServer::createNew(UsageEnvironment& env, Port ourPort,
++		      UserAuthenticationDatabase* authDatabase,
++		      unsigned reclamationSeconds) {
++  int ourSocketIPv4 = setUpOurSocket(env, ourPort, AF_INET);
++  int ourSocketIPv6 = setUpOurSocket(env, ourPort, AF_INET6);
++  if (ourSocketIPv4 < 0 && ourSocketIPv6 < 0) return NULL;
++  
++  return new RTSPServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, authDatabase, reclamationSeconds);
++}
++
++Boolean RTSPServer::lookupByName(UsageEnvironment& env,
++				 char const* name,
++				 RTSPServer*& resultServer) {
++  resultServer = NULL; // unless we succeed
++  
++  Medium* medium;
++  if (!Medium::lookupByName(env, name, medium)) return False;
++  
++  if (!medium->isRTSPServer()) {
++    env.setResultMsg(name, " is not a RTSP server");
++    return False;
++  }
++  
++  resultServer = (RTSPServer*)medium;
++  return True;
++}
++
++char* RTSPServer
++::rtspURL(ServerMediaSession const* serverMediaSession,
++	  int clientSocket, Boolean useIPv6) const {
++  char* urlPrefix = rtspURLPrefix(clientSocket, useIPv6);
++  char const* sessionName = serverMediaSession->streamName();
++  
++  char* resultURL = new char[strlen(urlPrefix) + strlen(sessionName) + 1];
++  snprintf(resultURL, sizeof(resultURL), "%s%s", urlPrefix, sessionName);
++  
++  delete[] urlPrefix;
++  return resultURL;
++}
++
++char* RTSPServer::rtspURLPrefix(int clientSocket, Boolean useIPv6) const {
++  struct sockaddr_storage ourAddress;
++
++  if (clientSocket < 0) {
++    // Use our default IP address in the URL:
++    if (!useIPv6) { // IPv4
++      ourAddress.ss_family = AF_INET;
++      ((sockaddr_in&)ourAddress).sin_addr.s_addr = ourIPv4Address(envir());
++    } else {
++      ourAddress.ss_family = AF_INET6;
++      ipv6AddressBits const& ourAddr6 = ourIPv6Address(envir());
++      for (unsigned i = 0; i < 16; ++i) ((sockaddr_in6&)ourAddress).sin6_addr.s6_addr[i] = ourAddr6[i];
++    }
++  } else {
++    SOCKLEN_T namelen = sizeof ourAddress;
++
++    getsockname(clientSocket, (struct sockaddr*)&ourAddress, &namelen);
++  }
++  
++  char urlBuffer[100]; // more than big enough for "rtsp://<ip-address>:<port>/"
++  
++  char const* addressPrefixInURL = ourAddress.ss_family == AF_INET6 ? "[" : "";
++  char const* addressSuffixInURL = ourAddress.ss_family == AF_INET6 ? "]" : "";
++
++  portNumBits defaultPortNum = fOurConnectionsUseTLS ? 322 : 554;
++  portNumBits portNumHostOrder = ntohs(fServerPort.num());
++  if (portNumHostOrder == defaultPortNum) {
++    snprintf(urlBuffer, sizeof(urlBuffer), "rtsp%s://%s%s%s/",
++	    fOurConnectionsUseTLS ? "s" : "",
++	    addressPrefixInURL, AddressString(ourAddress).val(), addressSuffixInURL);
++  } else {
++    snprintf(urlBuffer, sizeof(urlBuffer), "rtsp%s://%s%s%s:%hu/",
++	    fOurConnectionsUseTLS ? "s" : "",
++	    addressPrefixInURL, AddressString(ourAddress).val(), addressSuffixInURL, portNumHostOrder);
++  }
++  
++  return strDup(urlBuffer);
++}
++
++UserAuthenticationDatabase* RTSPServer::setAuthenticationDatabase(UserAuthenticationDatabase* newDB) {
++  UserAuthenticationDatabase* oldDB = fAuthDB;
++  fAuthDB = newDB;
++  
++  return oldDB;
++}
++
++Boolean RTSPServer::setUpTunnelingOverHTTP(Port httpPort) {
++  if (fWeServeSRTP) return False;
++    // If we've already set up streaming using SRTP, then streaming over HTTPS would make no
++    // sense (as SRTP would add extra overhead for no benefit).
++
++  fHTTPServerSocketIPv4 = setUpOurSocket(envir(), httpPort, AF_INET);
++  fHTTPServerSocketIPv6 = setUpOurSocket(envir(), httpPort, AF_INET6);
++  if (fHTTPServerSocketIPv4 >= 0 || fHTTPServerSocketIPv6 >= 0) {
++    fHTTPServerPort = httpPort;
++    envir().taskScheduler().turnOnBackgroundReadHandling(fHTTPServerSocketIPv4,
++							 incomingConnectionHandlerHTTPIPv4, this);
++    envir().taskScheduler().turnOnBackgroundReadHandling(fHTTPServerSocketIPv6,
++							 incomingConnectionHandlerHTTPIPv6, this);
++    return True;
++  }
++  
++  return False;
++}
++
++portNumBits RTSPServer::httpServerPortNum() const {
++  return ntohs(fHTTPServerPort.num());
++}
++
++void RTSPServer
++::setTLSState(char const* certFileName, char const* privKeyFileName,
++	      Boolean weServeSRTP, Boolean weEncryptSRTP) {
++  setTLSFileNames(certFileName, privKeyFileName);
++  fOurConnectionsUseTLS = True;
++  fWeServeSRTP = weServeSRTP;
++  fWeEncryptSRTP = weEncryptSRTP;
++
++  if (fWeServeSRTP) disableStreamingRTPOverTCP();
++    // If you want to stream RTP-over-TCP using a secure TCP connection, then stream over TLS,
++    // but without SRTP (as SRTP would add extra overhead for no benefit).
++}
++
++char const* RTSPServer::allowedCommandNames() {
++  return "OPTIONS, DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE, GET_PARAMETER, SET_PARAMETER";
++}
++
++UserAuthenticationDatabase* RTSPServer::getAuthenticationDatabaseForCommand(char const* /*cmdName*/) {
++  // default implementation
++  return fAuthDB;
++}
++
++Boolean RTSPServer::specialClientUserAccessCheck(int /*clientSocket*/,
++						 struct sockaddr_storage const& /*clientAddr*/,
++						 char const* /*urlSuffix*/, char const * /*username*/) {
++  // default implementation; no further access restrictions:
++  return True;
++}
++
++void RTSPServer
++::specialHandlingOfAuthenticationFailure(int /*clientSocket*/,
++					 struct sockaddr_storage const& /*clientAddr*/,
++					 char const* /*urlSuffix*/) {
++  // default implementation: do nothing
++}
++
++RTSPServer::RTSPServer(UsageEnvironment& env,
++		       int ourSocketIPv4, int ourSocketIPv6, Port ourPort,
++		       UserAuthenticationDatabase* authDatabase,
++		       unsigned reclamationSeconds)
++  : GenericMediaServer(env, ourSocketIPv4, ourSocketIPv6, ourPort, reclamationSeconds),
++    fHTTPServerSocketIPv4(-1), fHTTPServerSocketIPv6(-1), fHTTPServerPort(0),
++    fClientConnectionsForHTTPTunneling(NULL), // will get created if needed
++    fTCPStreamingDatabase(HashTable::create(ONE_WORD_HASH_KEYS)),
++    fPendingRegisterOrDeregisterRequests(HashTable::create(ONE_WORD_HASH_KEYS)),
++    fRegisterOrDeregisterRequestCounter(0), fAuthDB(authDatabase),
++    fAllowStreamingRTPOverTCP(True),
++    fOurConnectionsUseTLS(False), fWeServeSRTP(False) {
++}
++
++// A data structure that is used to implement "fTCPStreamingDatabase"
++// (and the "noteTCPStreamingOnSocket()" and "stopTCPStreamingOnSocket()" member functions):
++class streamingOverTCPRecord {
++public:
++  streamingOverTCPRecord(u_int32_t sessionId, unsigned trackNum, streamingOverTCPRecord* next)
++    : fNext(next), fSessionId(sessionId), fTrackNum(trackNum) {
++  }
++  virtual ~streamingOverTCPRecord() {
++    delete fNext;
++  }
++
++  streamingOverTCPRecord* fNext;
++  u_int32_t fSessionId;
++  unsigned fTrackNum;
++};
++
++RTSPServer::~RTSPServer() {
++  // Turn off background HTTP read handling (if any):
++  envir().taskScheduler().turnOffBackgroundReadHandling(fHTTPServerSocketIPv4);
++  ::closeSocket(fHTTPServerSocketIPv4);
++  envir().taskScheduler().turnOffBackgroundReadHandling(fHTTPServerSocketIPv6);
++  ::closeSocket(fHTTPServerSocketIPv6);
++  
++  cleanup(); // Removes all "ClientSession" and "ClientConnection" objects, and their tables.
++  delete fClientConnectionsForHTTPTunneling;
++  
++  // Delete any pending REGISTER requests:
++  RTSPRegisterOrDeregisterSender* r;
++  while ((r = (RTSPRegisterOrDeregisterSender*)fPendingRegisterOrDeregisterRequests->getFirst()) != NULL) {
++    delete r;
++  }
++  delete fPendingRegisterOrDeregisterRequests;
++  
++  // Empty out and close "fTCPStreamingDatabase":
++  streamingOverTCPRecord* sotcp;
++  while ((sotcp = (streamingOverTCPRecord*)fTCPStreamingDatabase->getFirst()) != NULL) {
++    delete sotcp;
++  }
++  delete fTCPStreamingDatabase;
++}
++
++Boolean RTSPServer::isRTSPServer() const {
++  return True;
++}
++
++void RTSPServer::addServerMediaSession(ServerMediaSession* serverMediaSession) {
++  GenericMediaServer::addServerMediaSession(serverMediaSession);
++  if (serverMediaSession != NULL) {
++    serverMediaSession->streamingUsesSRTP = fWeServeSRTP;
++    serverMediaSession->streamingIsEncrypted = fWeEncryptSRTP;
++  }
++}
++
++void RTSPServer::incomingConnectionHandlerHTTPIPv4(void* instance, int /*mask*/) {
++  RTSPServer* server = (RTSPServer*)instance;
++  server->incomingConnectionHandlerHTTPIPv4();
++}
++void RTSPServer::incomingConnectionHandlerHTTPIPv4() {
++  incomingConnectionHandlerOnSocket(fHTTPServerSocketIPv4);
++}
++void RTSPServer::incomingConnectionHandlerHTTPIPv6(void* instance, int /*mask*/) {
++  RTSPServer* server = (RTSPServer*)instance;
++  server->incomingConnectionHandlerHTTPIPv6();
++}
++void RTSPServer::incomingConnectionHandlerHTTPIPv6() {
++  incomingConnectionHandlerOnSocket(fHTTPServerSocketIPv6);
++}
++
++void RTSPServer
++::noteTCPStreamingOnSocket(int socketNum, RTSPClientSession* clientSession, unsigned trackNum) {
++  streamingOverTCPRecord* sotcpCur
++    = (streamingOverTCPRecord*)fTCPStreamingDatabase->Lookup((char const*)(uintptr_t)socketNum);
++  streamingOverTCPRecord* sotcpNew
++    = new streamingOverTCPRecord(clientSession->fOurSessionId, trackNum, sotcpCur);
++  fTCPStreamingDatabase->Add((char const*)(uintptr_t)socketNum, sotcpNew);
++}
++
++void RTSPServer
++::unnoteTCPStreamingOnSocket(int socketNum, RTSPClientSession* clientSession, unsigned trackNum) {
++  if (socketNum < 0) return;
++  streamingOverTCPRecord* sotcpHead
++    = (streamingOverTCPRecord*)fTCPStreamingDatabase->Lookup((char const*)(uintptr_t)socketNum);
++  if (sotcpHead == NULL) return;
++
++  // Look for a record of the (session,track); remove it if found:
++  streamingOverTCPRecord* sotcp = sotcpHead;
++  streamingOverTCPRecord* sotcpPrev = sotcpHead;
++  do {
++    if (sotcp->fSessionId == clientSession->fOurSessionId && sotcp->fTrackNum == trackNum) break;
++    sotcpPrev = sotcp;
++    sotcp = sotcp->fNext;
++  } while (sotcp != NULL);
++  if (sotcp == NULL) return; // not found
++  
++  if (sotcp == sotcpHead) {
++    // We found it at the head of the list.  Remove it and reinsert the tail into the hash table:
++    sotcpHead = sotcp->fNext;
++    sotcp->fNext = NULL;
++    delete sotcp;
++
++    if (sotcpHead == NULL) {
++      // There were no more entries on the list.  Remove the original entry from the hash table:
++      fTCPStreamingDatabase->Remove((char const*)(uintptr_t)socketNum);
++    } else {
++      // Add the rest of the list into the hash table (replacing the original):
++      fTCPStreamingDatabase->Add((char const*)(uintptr_t)socketNum, sotcpHead);
++    }
++  } else {
++    // We found it on the list, but not at the head.  Unlink it:
++    sotcpPrev->fNext = sotcp->fNext;
++    sotcp->fNext = NULL;
++    delete sotcp;
++  }
++}
++
++void RTSPServer::stopTCPStreamingOnSocket(int socketNum) {
++  // Close any stream that is streaming over "socketNum" (using RTP/RTCP-over-TCP streaming):
++  streamingOverTCPRecord* sotcp
++    = (streamingOverTCPRecord*)fTCPStreamingDatabase->Lookup((char const*)(uintptr_t)socketNum);
++  if (sotcp != NULL) {
++    do {
++      RTSPClientSession* clientSession
++	= (RTSPServer::RTSPClientSession*)lookupClientSession(sotcp->fSessionId);
++      if (clientSession != NULL) {
++	clientSession->deleteStreamByTrack(sotcp->fTrackNum);
++      }
++
++      streamingOverTCPRecord* sotcpNext = sotcp->fNext;
++      sotcp->fNext = NULL;
++      delete sotcp;
++      sotcp = sotcpNext;
++    } while (sotcp != NULL);
++    fTCPStreamingDatabase->Remove((char const*)(uintptr_t)socketNum);
++  }
++
++  RTPInterface::clearServerRequestAlternativeByteHandler(envir(), socketNum);
++}
++
++
++////////// RTSPServer::RTSPClientConnection implementation //////////
++
++RTSPServer::RTSPClientConnection
++::RTSPClientConnection(RTSPServer& ourServer,
++		       int clientSocket, struct sockaddr_storage const& clientAddr,
++		       Boolean useTLS)
++  : GenericMediaServer::ClientConnection(ourServer, clientSocket, clientAddr, useTLS),
++    fOurRTSPServer(ourServer), fClientInputSocket(fOurSocket), fClientOutputSocket(fOurSocket),
++    fPOSTSocketTLS(envir()), fAddressFamily(clientAddr.ss_family),
++    fIsActive(True), fRecursionCount(0), fCurrentCSeq(NULL), fOurSessionCookie(NULL), fScheduledDelayedTask(0) {
++  resetRequestBuffer();
++}
++
++RTSPServer::RTSPClientConnection::~RTSPClientConnection() {
++  if (fOurSessionCookie != NULL) {
++    // We were being used for RTSP-over-HTTP tunneling. Also remove ourselves from the 'session cookie' hash table before we go:
++    fOurRTSPServer.fClientConnectionsForHTTPTunneling->Remove(fOurSessionCookie);
++    delete[] fOurSessionCookie;
++  }
++  
++  closeSocketsRTSP();
++  delete[] fCurrentCSeq;
++}
++
++// Handler routines for specific RTSP commands:
++
++void RTSPServer::RTSPClientConnection::handleCmd_OPTIONS() {
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 200 OK\r\nCSeq: %s\r\n%sPublic: %s\r\n\r\n",
++	   fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
++}
++
++void RTSPServer::RTSPClientConnection
++::handleCmd_GET_PARAMETER(char const* /*fullRequestStr*/) {
++  // By default, we implement "GET_PARAMETER" (on the entire server) just as a 'no op', and send back a dummy response.
++  // (If you want to handle this type of "GET_PARAMETER" differently, you can do so by defining a subclass of "RTSPServer"
++  // and "RTSPServer::RTSPClientConnection", and then reimplement this virtual function in your subclass.)
++  setRTSPResponse("200 OK", LIVEMEDIA_LIBRARY_VERSION_STRING);
++}
++
++void RTSPServer::RTSPClientConnection
++::handleCmd_SET_PARAMETER(char const* /*fullRequestStr*/) {
++  // By default, we implement "SET_PARAMETER" (on the entire server) just as a 'no op', and send back an empty response.
++  // (If you want to handle this type of "SET_PARAMETER" differently, you can do so by defining a subclass of "RTSPServer"
++  // and "RTSPServer::RTSPClientConnection", and then reimplement this virtual function in your subclass.)
++  setRTSPResponse("200 OK");
++}
++
++void RTSPServer::RTSPClientConnection
++::handleCmd_DESCRIBE(char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr) {
++  char urlTotalSuffix[2*RTSP_PARAM_STRING_MAX];
++      // enough space for urlPreSuffix/urlSuffix'\0'
++  urlTotalSuffix[0] = '\0';
++  if (urlPreSuffix[0] != '\0') {
++    strcat(urlTotalSuffix, urlPreSuffix);
++    strcat(urlTotalSuffix, "/");
++  }
++  strcat(urlTotalSuffix, urlSuffix);
++    
++  if (!authenticationOK("DESCRIBE", urlTotalSuffix, fullRequestStr)) return;
++    
++  // We should really check that the request contains an "Accept:" #####
++  // for "application/sdp", because that's what we're sending back #####
++    
++  // Begin by looking up the "ServerMediaSession" object for the specified "urlTotalSuffix":
++  fOurServer.lookupServerMediaSession(urlTotalSuffix, DESCRIBELookupCompletionFunction, this);
++}
++
++void RTSPServer::RTSPClientConnection
++::DESCRIBELookupCompletionFunction(void* clientData, ServerMediaSession* sessionLookedUp) {
++  RTSPServer::RTSPClientConnection* connection = (RTSPServer::RTSPClientConnection*)clientData;
++  connection->handleCmd_DESCRIBE_afterLookup(sessionLookedUp);
++}
++
++void RTSPServer::RTSPClientConnection
++::handleCmd_DESCRIBE_afterLookup(ServerMediaSession* session) {
++  char* sdpDescription = NULL;
++  char* rtspURL = NULL;
++  do {
++    if (session == NULL) {
++      handleCmd_notFound();
++      break;
++    }
++    
++    // Increment the "ServerMediaSession" object's reference count, in case someone removes it
++    // while we're using it:
++    session->incrementReferenceCount();
++
++    // Then, assemble a SDP description for this session:
++    sdpDescription = session->generateSDPDescription(fAddressFamily);
++    if (sdpDescription == NULL) {
++      // This usually means that a file name that was specified for a
++      // "ServerMediaSubsession" does not exist.
++      setRTSPResponse("404 File Not Found, Or In Incorrect Format");
++      break;
++    }
++    unsigned sdpDescriptionSize = strlen(sdpDescription);
++    
++    // Also, generate our RTSP URL, for the "Content-Base:" header
++    // (which is necessary to ensure that the correct URL gets used in subsequent "SETUP" requests).
++    rtspURL = fOurRTSPServer.rtspURL(session, fClientInputSocket);
++    
++    snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	     "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
++	     "%s"
++	     "Content-Base: %s/\r\n"
++	     "Content-Type: application/sdp\r\n"
++	     "Content-Length: %d\r\n\r\n"
++	     "%s",
++	     fCurrentCSeq,
++	     dateHeader(),
++	     rtspURL,
++	     sdpDescriptionSize,
++	     sdpDescription);
++  } while (0);
++  
++  if (session != NULL) {
++    // Decrement its reference count, now that we're done using it:
++    session->decrementReferenceCount();
++    if (session->referenceCount() == 0 && session->deleteWhenUnreferenced()) {
++      fOurServer.removeServerMediaSession(session);
++    }
++  }
++
++  delete[] sdpDescription;
++  delete[] rtspURL;
++}
++
++static void lookForHeader(char const* headerName, char const* source, unsigned sourceLen, char* resultStr, unsigned resultMaxSize) {
++  resultStr[0] = '\0';  // by default, return an empty string
++  unsigned headerNameLen = strlen(headerName);
++  for (int i = 0; i < (int)(sourceLen-headerNameLen); ++i) {
++    if (strncmp(&source[i], headerName, headerNameLen) == 0 && source[i+headerNameLen] == ':') {
++      // We found the header.  Skip over any whitespace, then copy the rest of the line to "resultStr":
++      for (i += headerNameLen+1; i < (int)sourceLen && (source[i] == ' ' || source[i] == '\t'); ++i) {}
++      for (unsigned j = i; j < sourceLen; ++j) {
++	if (source[j] == '\r' || source[j] == '\n') {
++	  // We've found the end of the line.  Copy it to the result (if it will fit):
++	  if (j-i+1 > resultMaxSize) return; // it wouldn't fit
++	  char const* resultSource = &source[i];
++	  char const* resultSourceEnd = &source[j];
++	  while (resultSource < resultSourceEnd) *resultStr++ = *resultSource++;
++	  *resultStr = '\0';
++	  return;
++	}
++      }
++    }
++  }
++}
++
++void RTSPServer::RTSPClientConnection::handleCmd_bad() {
++  // Don't do anything with "fCurrentCSeq", because it might be nonsense
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 400 Bad Request\r\n%sAllow: %s\r\n\r\n",
++	   dateHeader(), fOurRTSPServer.allowedCommandNames());
++}
++
++void RTSPServer::RTSPClientConnection::handleCmd_notSupported() {
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 405 Method Not Allowed\r\nCSeq: %s\r\n%sAllow: %s\r\n\r\n",
++	   fCurrentCSeq, dateHeader(), fOurRTSPServer.allowedCommandNames());
++}
++
++void RTSPServer::RTSPClientConnection::handleCmd_redirect(char const* urlSuffix) {
++  char* urlPrefix = fOurRTSPServer.rtspURLPrefix(fClientInputSocket);
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 301 Moved Permanently\r\n"
++	   "CSeq: %s\r\n"
++	   "%s"
++	   "Location: %s%s\r\n\r\n",
++	   fCurrentCSeq,
++	   dateHeader(),
++	   urlPrefix, urlSuffix);
++  delete[] urlPrefix;
++}
++
++void RTSPServer::RTSPClientConnection::handleCmd_notFound() {
++  setRTSPResponse("404 Stream Not Found");
++}
++
++void RTSPServer::RTSPClientConnection::handleCmd_sessionNotFound() {
++  setRTSPResponse("454 Session Not Found");
++}
++
++void RTSPServer::RTSPClientConnection::handleCmd_unsupportedTransport() {
++  setRTSPResponse("461 Unsupported Transport");
++}
++
++Boolean RTSPServer::RTSPClientConnection::parseHTTPRequestString(char* resultCmdName, unsigned resultCmdNameMaxSize,
++								 char* urlSuffix, unsigned urlSuffixMaxSize,
++								 char* sessionCookie, unsigned sessionCookieMaxSize,
++								 char* acceptStr, unsigned acceptStrMaxSize) {
++  // Check for the limited HTTP requests that we expect for specifying RTSP-over-HTTP tunneling.
++  // This parser is currently rather dumb; it should be made smarter #####
++  char const* reqStr = (char const*)(uintptr_t)fRequestBuffer;
++  unsigned const reqStrSize = fRequestBytesAlreadySeen;
++  
++  // Read everything up to the first space as the command name:
++  Boolean parseSucceeded = False;
++  unsigned i;
++  for (i = 0; i < resultCmdNameMaxSize-1 && i < reqStrSize; ++i) {
++    char c = reqStr[i];
++    if (c == ' ' || c == '\t') {
++      parseSucceeded = True;
++      break;
++    }
++    
++    resultCmdName[i] = c;
++  }
++  resultCmdName[i] = '\0';
++  if (!parseSucceeded) return False;
++  
++  // Look for the string "HTTP/", before the first \r or \n:
++  parseSucceeded = False;
++  for (; i < reqStrSize-5 && reqStr[i] != '\r' && reqStr[i] != '\n'; ++i) {
++    if (reqStr[i] == 'H' && reqStr[i+1] == 'T' && reqStr[i+2]== 'T' && reqStr[i+3]== 'P' && reqStr[i+4]== '/') {
++      i += 5; // to advance past the "HTTP/"
++      parseSucceeded = True;
++      break;
++    }
++  }
++  if (!parseSucceeded) return False;
++  
++  // Get the 'URL suffix' that occurred before this:
++  unsigned k = i-6;
++  while (k > 0 && reqStr[k] == ' ') --k; // back up over white space
++  unsigned j = k;
++  while (j > 0 && reqStr[j] != ' ' && reqStr[j] != '/') --j;
++  // The URL suffix is in position (j,k]:
++  if (k - j + 1 > urlSuffixMaxSize) return False; // there's no room> 
++  unsigned n = 0;
++  while (++j <= k) urlSuffix[n++] = reqStr[j];
++  urlSuffix[n] = '\0';
++  
++  // Look for various headers that we're interested in:
++  lookForHeader("x-sessioncookie", &reqStr[i], reqStrSize-i, sessionCookie, sessionCookieMaxSize);
++  lookForHeader("Accept", &reqStr[i], reqStrSize-i, acceptStr, acceptStrMaxSize);
++  
++  return True;
++}
++
++void RTSPServer::RTSPClientConnection::handleHTTPCmd_notSupported() {
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "HTTP/1.0 405 Method Not Allowed\r\n%s\r\n\r\n",
++	   dateHeader());
++}
++
++void RTSPServer::RTSPClientConnection::handleHTTPCmd_notFound() {
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "HTTP/1.0 404 Not Found\r\n%s\r\n\r\n",
++	   dateHeader());
++}
++
++void RTSPServer::RTSPClientConnection::handleHTTPCmd_OPTIONS() {
++#ifdef DEBUG
++  fprintf(stderr, "Handled HTTP \"OPTIONS\" request\n");
++#endif
++  // Construct a response to the "OPTIONS" command that notes that our special headers (for RTSP-over-HTTP tunneling) are allowed:
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "HTTP/1.0 200 OK\r\n"
++	   "%s"
++	   "Access-Control-Allow-Origin: *\r\n"
++	   "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
++	   "Access-Control-Allow-Headers: x-sessioncookie, Pragma, Cache-Control\r\n"
++	   "Access-Control-Max-Age: 1728000\r\n"
++	   "\r\n",
++	   dateHeader());
++}
++
++void RTSPServer::RTSPClientConnection::handleHTTPCmd_TunnelingGET(char const* sessionCookie) {
++  // Record ourself as having this 'session cookie', so that a subsequent HTTP "POST" command (with the same 'session cookie')
++  // can find us:
++  if (fOurRTSPServer.fClientConnectionsForHTTPTunneling == NULL) {
++    fOurRTSPServer.fClientConnectionsForHTTPTunneling = HashTable::create(STRING_HASH_KEYS);
++  }
++  delete[] fOurSessionCookie; fOurSessionCookie = strDup(sessionCookie);
++  fOurRTSPServer.fClientConnectionsForHTTPTunneling->Add(sessionCookie, (void *)(uintptr_t)this);
++#ifdef DEBUG
++  fprintf(stderr, "Handled HTTP \"GET\" request (client output socket: %d)\n", fClientOutputSocket);
++#endif
++  
++  // Construct our response:
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "HTTP/1.0 200 OK\r\n"
++	   "%s"
++	   "Cache-Control: no-cache\r\n"
++	   "Pragma: no-cache\r\n"
++	   "Content-Type: application/x-rtsp-tunnelled\r\n"
++	   "\r\n",
++	   dateHeader());
++}
++
++Boolean RTSPServer::RTSPClientConnection
++::handleHTTPCmd_TunnelingPOST(char const* sessionCookie, unsigned char const* extraData, unsigned extraDataSize) {
++  // Use the "sessionCookie" string to look up the separate "RTSPClientConnection" object that should have been used to handle
++  // an earlier HTTP "GET" request:
++  if (fOurRTSPServer.fClientConnectionsForHTTPTunneling == NULL) {
++    fOurRTSPServer.fClientConnectionsForHTTPTunneling = HashTable::create(STRING_HASH_KEYS);
++  }
++  RTSPServer::RTSPClientConnection* prevClientConnection
++    = (RTSPServer::RTSPClientConnection*)(fOurRTSPServer.fClientConnectionsForHTTPTunneling->Lookup(sessionCookie));
++  if (prevClientConnection == NULL || prevClientConnection == this) {
++    // Either there was no previous HTTP "GET" request, or it was on the same connection; treat this "POST" request as bad:
++    handleHTTPCmd_notSupported();
++    fIsActive = False; // triggers deletion of ourself
++    return False;
++  }
++#ifdef DEBUG
++  fprintf(stderr, "Handled HTTP \"POST\" request (client input socket: %d)\n", fClientInputSocket);
++#endif
++  
++  // Change the previous "RTSPClientSession" object's input socket to ours.  It will be used for subsequent requests:
++  prevClientConnection->changeClientInputSocket(fClientInputSocket, fInputTLS,
++						extraData, extraDataSize);
++  fClientInputSocket = fClientOutputSocket = -1; // so the socket doesn't get closed when we get deleted
++  fInputTLS->nullify(); // so that our destructor doesn't reset the copied TLS state
++
++  return True;
++}
++
++void RTSPServer::RTSPClientConnection::handleHTTPCmd_StreamingGET(char const* /*urlSuffix*/, char const* /*fullRequestStr*/) {
++  // By default, we don't support requests to access streams via HTTP:
++  handleHTTPCmd_notSupported();
++}
++
++void RTSPServer::RTSPClientConnection::resetRequestBuffer() {
++  ClientConnection::resetRequestBuffer();
++  
++  fLastCRLF = &fRequestBuffer[-3]; // hack: Ensures that we don't think we have end-of-msg if the data starts with <CR><LF>
++  fBase64RemainderCount = 0;
++}
++
++void RTSPServer::RTSPClientConnection::closeSocketsRTSP() {
++  // First, tell our server to stop any streaming that it might be doing over our output socket:
++  fOurRTSPServer.stopTCPStreamingOnSocket(fClientOutputSocket);
++
++  // Turn off background handling on our input socket (and output socket, if different); then close it (or them):
++  if (fClientOutputSocket != fClientInputSocket) {
++    envir().taskScheduler().disableBackgroundHandling(fClientOutputSocket);
++    ::closeSocket(fClientOutputSocket);
++  }
++  fClientOutputSocket = -1;
++  
++  closeSockets(); // closes fClientInputSocket
++}
++
++void RTSPServer::RTSPClientConnection::handleAlternativeRequestByte(void* instance, u_int8_t requestByte) {
++  RTSPClientConnection* connection = (RTSPClientConnection*)instance;
++  connection->handleAlternativeRequestByte1(requestByte);
++}
++
++void RTSPServer::RTSPClientConnection::handleAlternativeRequestByte1(u_int8_t requestByte) {
++  if (requestByte == 0xFF) {
++    // Hack: The new handler of the input TCP socket encountered an error reading it.  Indicate this:
++    handleRequestBytes(-1);
++  } else if (requestByte == 0xFE) {
++    // Another hack: The new handler of the input TCP socket no longer needs it, so take back control of it:
++    envir().taskScheduler().setBackgroundHandling(fClientInputSocket, SOCKET_READABLE|SOCKET_EXCEPTION,
++						  incomingRequestHandler, this);
++  } else {
++    // Normal case: Add this character to our buffer; then try to handle the data that we have buffered so far:
++    if (fRequestBufferBytesLeft == 0 || fRequestBytesAlreadySeen >= REQUEST_BUFFER_SIZE) return;
++    fRequestBuffer[fRequestBytesAlreadySeen] = requestByte;
++    handleRequestBytes(1);
++  }
++}
++
++void RTSPServer::RTSPClientConnection::handleRequestBytes(int newBytesRead) {
++  int numBytesRemaining = 0;
++  ++fRecursionCount;
++  
++  do {
++    RTSPServer::RTSPClientSession* clientSession = NULL;
++
++    if (newBytesRead < 0 || (unsigned)newBytesRead >= fRequestBufferBytesLeft) {
++      // Either the client socket has died, or the request was too big for us.
++      // Terminate this connection:
++#ifdef DEBUG
++      fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() read %d new bytes (of %d); terminating connection!\n", this, newBytesRead, fRequestBufferBytesLeft);
++#endif
++      fIsActive = False;
++      break;
++    }
++    
++    Boolean endOfMsg = False;
++    unsigned char* ptr = &fRequestBuffer[fRequestBytesAlreadySeen];
++#ifdef DEBUG
++    ptr[newBytesRead] = '\0';
++    fprintf(stderr, "RTSPClientConnection[%p]::handleRequestBytes() %s %d new bytes:%s\n",
++	    this, numBytesRemaining > 0 ? "processing" : "read", newBytesRead, ptr);
++#endif
++    
++    if (fClientOutputSocket != fClientInputSocket && numBytesRemaining == 0) {
++      // We're doing RTSP-over-HTTP tunneling, and input commands are assumed to have been Base64-encoded.
++      // We therefore Base64-decode as much of this new data as we can (i.e., up to a multiple of 4 bytes).
++      
++      // But first, we remove any whitespace that may be in the input data:
++      unsigned toIndex = 0;
++      for (int fromIndex = 0; fromIndex < newBytesRead; ++fromIndex) {
++	char c = ptr[fromIndex];
++	if (!(c == ' ' || c == '\t' || c == '\r' || c == '\n')) { // not 'whitespace': space,tab,CR,NL
++	  ptr[toIndex++] = c;
++	}
++      }
++      newBytesRead = toIndex;
++      
++      unsigned numBytesToDecode = fBase64RemainderCount + newBytesRead;
++      unsigned newBase64RemainderCount = numBytesToDecode%4;
++      numBytesToDecode -= newBase64RemainderCount;
++      if (numBytesToDecode > 0) {
++	ptr[newBytesRead] = '\0';
++	unsigned decodedSize;
++	unsigned char* decodedBytes = base64Decode((char const*)(ptr-fBase64RemainderCount), numBytesToDecode, decodedSize);
++#ifdef DEBUG
++	fprintf(stderr, "Base64-decoded %d input bytes into %d new bytes:", numBytesToDecode, decodedSize);
++	for (unsigned k = 0; k < decodedSize; ++k) fprintf(stderr, "%c", decodedBytes[k]);
++	fprintf(stderr, "\n");
++#endif
++	
++	// Copy the new decoded bytes in place of the old ones (we can do this because there are fewer decoded bytes than original):
++	unsigned char* to = ptr-fBase64RemainderCount;
++	for (unsigned i = 0; i < decodedSize; ++i) *to++ = decodedBytes[i];
++	
++	// Then copy any remaining (undecoded) bytes to the end:
++	for (unsigned j = 0; j < newBase64RemainderCount; ++j) *to++ = (ptr-fBase64RemainderCount+numBytesToDecode)[j];
++	
++	newBytesRead = decodedSize - fBase64RemainderCount + newBase64RemainderCount;
++	  // adjust to allow for the size of the new decoded data (+ remainder)
++	delete[] decodedBytes;
++      }
++      fBase64RemainderCount = newBase64RemainderCount;
++    }
++    
++    unsigned char* tmpPtr = fLastCRLF + 2;
++    if (fBase64RemainderCount == 0) { // no more Base-64 bytes remain to be read/decoded
++      // Look for the end of the message: <CR><LF><CR><LF>
++      if (tmpPtr < fRequestBuffer) tmpPtr = fRequestBuffer;
++      while (tmpPtr < &ptr[newBytesRead-1]) {
++	if (*tmpPtr == '\r' && *(tmpPtr+1) == '\n') {
++	  if (tmpPtr - fLastCRLF == 2) { // This is it:
++	    endOfMsg = True;
++	    break;
++	  }
++	  fLastCRLF = tmpPtr;
++	}
++	++tmpPtr;
++      }
++    }
++    
++    fRequestBufferBytesLeft -= newBytesRead;
++    fRequestBytesAlreadySeen += newBytesRead;
++    
++    if (!endOfMsg) break; // subsequent reads will be needed to complete the request
++    
++    // Parse the request string into command name and 'CSeq', then handle the command:
++    fRequestBuffer[fRequestBytesAlreadySeen] = '\0';
++    char cmdName[RTSP_PARAM_STRING_MAX];
++    char urlPreSuffix[RTSP_PARAM_STRING_MAX];
++    char urlSuffix[RTSP_PARAM_STRING_MAX];
++    char cseq[RTSP_PARAM_STRING_MAX];
++    char sessionIdStr[RTSP_PARAM_STRING_MAX];
++    unsigned contentLength = 0;
++    Boolean urlIsRTSPS;
++    Boolean playAfterSetup = False;
++    fLastCRLF[2] = '\0'; // temporarily, for parsing
++    Boolean parseSucceeded = parseRTSPRequestString((char *)(uintptr_t)fRequestBuffer, fLastCRLF+2 - fRequestBuffer,
++						    cmdName, sizeof cmdName,
++						    urlPreSuffix, sizeof urlPreSuffix,
++						    urlSuffix, sizeof urlSuffix,
++						    cseq, sizeof cseq,
++						    sessionIdStr, sizeof sessionIdStr,
++						    contentLength, urlIsRTSPS);
++    fLastCRLF[2] = '\r'; // restore its value
++    // Check first for a bogus "Content-Length" value that would cause a pointer wraparound:
++    if (tmpPtr + 2 + contentLength < tmpPtr + 2) {
++#ifdef DEBUG
++      fprintf(stderr, "parseRTSPRequestString() returned a bogus \"Content-Length:\" value: 0x%x (%d)\n", contentLength, (int)contentLength);
++#endif
++      contentLength = 0;
++      parseSucceeded = False;
++    }
++    if (parseSucceeded) {
++#ifdef DEBUG
++      fprintf(stderr, "parseRTSPRequestString() succeeded, returning cmdName \"%s\", urlPreSuffix \"%s\", urlSuffix \"%s\", CSeq \"%s\", Content-Length %u, with %d bytes following the message.\n", cmdName, urlPreSuffix, urlSuffix, cseq, contentLength, ptr + newBytesRead - (tmpPtr + 2));
++#endif
++      // If there was a "Content-Length:" header, then make sure we've received all of the data that it specified:
++      if (ptr + newBytesRead < tmpPtr + 2 + contentLength) break; // we still need more data; subsequent reads will give it to us 
++      
++      // If the request included a "Session:" id, and it refers to a client session that's
++      // current ongoing, then use this command to indicate 'liveness' on that client session:
++      Boolean const requestIncludedSessionId = sessionIdStr[0] != '\0';
++      if (requestIncludedSessionId) {
++	clientSession
++	  = (RTSPServer::RTSPClientSession*)(fOurRTSPServer.lookupClientSession(sessionIdStr));
++	if (clientSession != NULL) clientSession->noteLiveness();
++      }
++    
++      // We now have a complete RTSP request.
++      // Handle the specified command (beginning with commands that are session-independent):
++      delete[] fCurrentCSeq; fCurrentCSeq = strDup(cseq);
++
++      // If the request specified the wrong type of URL
++      // (i.e., "rtsps" instead of "rtsp", or vice versa), then send back a 'redirect':
++      if (urlIsRTSPS != fOurRTSPServer.fOurConnectionsUseTLS) {
++#ifdef DEBUG
++	fprintf(stderr, "Calling handleCmd_redirect()\n");
++#endif
++	handleCmd_redirect(urlSuffix);
++      } else if (strcmp(cmdName, "OPTIONS") == 0) {
++	// If the "OPTIONS" command included a "Session:" id for a session that doesn't exist,
++	// then treat this as an error:
++	if (requestIncludedSessionId && clientSession == NULL) {
++#ifdef DEBUG
++	  fprintf(stderr, "Calling handleCmd_sessionNotFound() (case 1)\n");
++#endif
++	  handleCmd_sessionNotFound();
++	} else {
++	  // Normal case:
++	  handleCmd_OPTIONS();
++	}
++      } else if (urlPreSuffix[0] == '\0' && urlSuffix[0] == '*' && urlSuffix[1] == '\0') {
++	// The special "*" URL means: an operation on the entire server.  This works only for GET_PARAMETER and SET_PARAMETER:
++	if (strcmp(cmdName, "GET_PARAMETER") == 0) {
++	  handleCmd_GET_PARAMETER((char const*)(uintptr_t)fRequestBuffer);
++	} else if (strcmp(cmdName, "SET_PARAMETER") == 0) {
++	  handleCmd_SET_PARAMETER((char const*)(uintptr_t)fRequestBuffer);
++	} else {
++	  handleCmd_notSupported();
++	}
++      } else if (strcmp(cmdName, "DESCRIBE") == 0) {
++	handleCmd_DESCRIBE(urlPreSuffix, urlSuffix, (char const*)(uintptr_t)fRequestBuffer);
++      } else if (strcmp(cmdName, "SETUP") == 0) {
++	Boolean areAuthenticated = True;
++
++	if (!requestIncludedSessionId) {
++	  // No session id was present in the request.
++	  // So create a new "RTSPClientSession" object for this request.
++
++	  // But first, make sure that we're authenticated to perform this command:
++	  char urlTotalSuffix[2*RTSP_PARAM_STRING_MAX];
++	      // enough space for urlPreSuffix/urlSuffix'\0'
++	  urlTotalSuffix[0] = '\0';
++	  if (urlPreSuffix[0] != '\0') {
++	    strcat(urlTotalSuffix, urlPreSuffix);
++	    strcat(urlTotalSuffix, "/");
++	  }
++	  strcat(urlTotalSuffix, urlSuffix);
++	  if (authenticationOK("SETUP", urlTotalSuffix, (char const*)(uintptr_t)fRequestBuffer)) {
++	    clientSession
++	      = (RTSPServer::RTSPClientSession*)fOurRTSPServer.createNewClientSessionWithId();
++	  } else {
++	    areAuthenticated = False;
++	  }
++	}
++	if (clientSession != NULL) {
++	  clientSession->handleCmd_SETUP(this, urlPreSuffix, urlSuffix, (char const*)(uintptr_t)fRequestBuffer);
++	  playAfterSetup = clientSession->fStreamAfterSETUP;
++	} else if (areAuthenticated) {
++#ifdef DEBUG
++	  fprintf(stderr, "Calling handleCmd_sessionNotFound() (case 2)\n");
++#endif
++	  handleCmd_sessionNotFound();
++	}
++      } else if (strcmp(cmdName, "TEARDOWN") == 0
++		 || strcmp(cmdName, "PLAY") == 0
++		 || strcmp(cmdName, "PAUSE") == 0
++		 || strcmp(cmdName, "GET_PARAMETER") == 0
++		 || strcmp(cmdName, "SET_PARAMETER") == 0) {
++	if (clientSession != NULL) {
++	  clientSession->handleCmd_withinSession(this, cmdName, urlPreSuffix, urlSuffix, (char const*)(uintptr_t)fRequestBuffer);
++	} else {
++#ifdef DEBUG
++	  fprintf(stderr, "Calling handleCmd_sessionNotFound() (case 3)\n");
++#endif
++	  handleCmd_sessionNotFound();
++	}
++      } else if (strcmp(cmdName, "REGISTER") == 0 || strcmp(cmdName, "DEREGISTER") == 0) {
++	// Because - unlike other commands - an implementation of this command needs
++	// the entire URL, we re-parse the command to get it:
++	char* url = strDupSize((char *)(uintptr_t)fRequestBuffer);
++	if (sscanf((char *)(uintptr_t)fRequestBuffer, "%*s %s", url) == 1) {
++	  // Check for special command-specific parameters in a "Transport:" header:
++	  Boolean reuseConnection, deliverViaTCP;
++	  char* proxyURLSuffix;
++	  parseTransportHeaderForREGISTER((const char *)(uintptr_t)fRequestBuffer, reuseConnection, deliverViaTCP, proxyURLSuffix);
++
++	  handleCmd_REGISTER(cmdName, url, urlSuffix, (char const*)(uintptr_t)fRequestBuffer, reuseConnection, deliverViaTCP, proxyURLSuffix);
++	  delete[] proxyURLSuffix;
++	} else {
++	  handleCmd_bad();
++	}
++	delete[] url;
++      } else {
++	// The command is one that we don't handle:
++	handleCmd_notSupported();
++      }
++    } else {
++#ifdef DEBUG
++      fprintf(stderr, "parseRTSPRequestString() failed; checking now for HTTP commands (for RTSP-over-HTTP tunneling)...\n");
++#endif
++      // The request was not (valid) RTSP, but check for a special case: HTTP commands (for setting up RTSP-over-HTTP tunneling):
++      char sessionCookie[RTSP_PARAM_STRING_MAX];
++      char acceptStr[RTSP_PARAM_STRING_MAX];
++      *fLastCRLF = '\0'; // temporarily, for parsing
++      parseSucceeded = parseHTTPRequestString(cmdName, sizeof cmdName,
++					      urlSuffix, sizeof urlPreSuffix,
++					      sessionCookie, sizeof sessionCookie,
++					      acceptStr, sizeof acceptStr);
++      *fLastCRLF = '\r';
++      if (parseSucceeded) {
++#ifdef DEBUG
++	fprintf(stderr, "parseHTTPRequestString() succeeded, returning cmdName \"%s\", urlSuffix \"%s\", sessionCookie \"%s\", acceptStr \"%s\"\n", cmdName, urlSuffix, sessionCookie, acceptStr);
++#endif
++	// Check that the HTTP command is valid for RTSP-over-HTTP tunneling: There must be a 'session cookie'.
++	Boolean isValidHTTPCmd = True;
++	if (strcmp(cmdName, "OPTIONS") == 0) {
++	  handleHTTPCmd_OPTIONS();
++	} else if (sessionCookie[0] == '\0') {
++	  // There was no "x-sessioncookie:" header.  If there was an "Accept: application/x-rtsp-tunnelled" header,
++	  // then this is a bad tunneling request.  Otherwise, assume that it's an attempt to access the stream via HTTP.
++	  if (strcmp(acceptStr, "application/x-rtsp-tunnelled") == 0) {
++	    isValidHTTPCmd = False;
++	  } else {
++	    handleHTTPCmd_StreamingGET(urlSuffix, (char const*)(uintptr_t)fRequestBuffer);
++	  }
++	} else if (strcmp(cmdName, "GET") == 0) {
++	  handleHTTPCmd_TunnelingGET(sessionCookie);
++	} else if (strcmp(cmdName, "POST") == 0) {
++	  // We might have received additional data following the HTTP "POST" command - i.e., the first Base64-encoded RTSP command.
++	  // Check for this, and handle it if it exists:
++	  unsigned char const* extraData = fLastCRLF+4;
++	  unsigned extraDataSize = &fRequestBuffer[fRequestBytesAlreadySeen] - extraData;
++	  if (handleHTTPCmd_TunnelingPOST(sessionCookie, extraData, extraDataSize)) {
++	    // We don't respond to the "POST" command, and we go away:
++	    fIsActive = False;
++	    break;
++	  }
++	} else {
++	  isValidHTTPCmd = False;
++	}
++	if (!isValidHTTPCmd) {
++	  handleHTTPCmd_notSupported();
++	}
++      } else {
++#ifdef DEBUG
++	fprintf(stderr, "parseHTTPRequestString() failed!\n");
++#endif
++	handleCmd_bad();
++      }
++    }
++    
++#ifdef DEBUG
++    fprintf(stderr, "sending response: %s", fResponseBuffer);
++#endif
++    unsigned const numBytesToWrite = strlen((char *)(uintptr_t)fResponseBuffer);
++    if (fOutputTLS->isNeeded) {
++        fOutputTLS->write((char const*)(uintptr_t)fResponseBuffer, numBytesToWrite);
++    } else {
++        send(fClientOutputSocket, (char const*)(uintptr_t)fResponseBuffer, numBytesToWrite, MSG_NOSIGNAL);
++   }
++    
++    if (playAfterSetup) {
++      // The client has asked for streaming to commence now, rather than after a
++      // subsequent "PLAY" command.  So, simulate the effect of a "PLAY" command:
++      clientSession->handleCmd_withinSession(this, "PLAY", urlPreSuffix, urlSuffix, (char const*)(uintptr_t)fRequestBuffer);
++    }
++    
++    // Check whether there are extra bytes remaining in the buffer, after the end of the request (a rare case).
++    // If so, move them to the front of our buffer, and keep processing it, because it might be a following, pipelined request.
++    unsigned requestSize = (fLastCRLF+4-fRequestBuffer) + contentLength;
++    numBytesRemaining = fRequestBytesAlreadySeen - requestSize;
++    resetRequestBuffer(); // to prepare for any subsequent request
++    
++    if (numBytesRemaining > 0) {
++      memmove(fRequestBuffer, &fRequestBuffer[requestSize], numBytesRemaining);
++      newBytesRead = numBytesRemaining;
++    }
++  } while (numBytesRemaining > 0);
++  
++  --fRecursionCount;
++  // If it has a scheduledDelayedTask, don't delete the instance or close the sockets. The sockets can be reused in the task.
++  if (!fIsActive && fScheduledDelayedTask <= 0) {
++    if (fRecursionCount > 0) closeSockets(); else delete this;
++    // Note: The "fRecursionCount" test is for a pathological situation where we reenter the event loop and get called recursively
++    // while handling a command (e.g., while handling a "DESCRIBE", to get a SDP description).
++    // In such a case we don't want to actually delete ourself until we leave the outermost call.
++  }
++}
++
++#define SKIP_WHITESPACE while (*fields != '\0' && (*fields == ' ' || *fields == '\t')) ++fields
++
++static Boolean parseAuthorizationHeader(char const* buf,
++					char const*& username,
++					char const*& realm,
++					char const*& nonce, char const*& uri,
++					char const*& response) {
++  // Initialize the result parameters to default values:
++  username = realm = nonce = uri = response = NULL;
++  
++  // First, find "Authorization:"
++  while (1) {
++    if (*buf == '\0') return False; // not found
++    if (_strncasecmp(buf, "Authorization: Digest ", 22) == 0) break;
++    ++buf;
++  }
++  
++  // Then, run through each of the fields, looking for ones we handle:
++  char const* fields = buf + 22;
++  char* parameter = strDupSize(fields);
++  char* value = strDupSize(fields);
++  char* p;
++  Boolean success;
++  do {
++    // Parse: <parameter>="<value>"
++    success = False;
++    parameter[0] = value[0] = '\0';
++    SKIP_WHITESPACE;
++    for (p = parameter; *fields != '\0' && *fields != ' ' && *fields != '\t' && *fields != '='; ) *p++ = *fields++;
++    SKIP_WHITESPACE;
++    if (*fields++ != '=') break; // parsing failed
++    *p = '\0'; // complete parsing <parameter>
++    SKIP_WHITESPACE;
++    if (*fields++ != '"') break; // parsing failed
++    for (p = value; *fields != '\0' && *fields != '"'; ) *p++ = *fields++;
++    if (*fields++ != '"') break; // parsing failed
++    *p = '\0'; // complete parsing <value>
++    SKIP_WHITESPACE;
++    success = True;
++
++    // Copy values for parameters that we understand:
++    if (strcmp(parameter, "username") == 0) {
++      username = strDup(value);
++    } else if (strcmp(parameter, "realm") == 0) {
++      realm = strDup(value);
++    } else if (strcmp(parameter, "nonce") == 0) {
++      nonce = strDup(value);
++    } else if (strcmp(parameter, "uri") == 0) {
++      uri = strDup(value);
++    } else if (strcmp(parameter, "response") == 0) {
++      response = strDup(value);
++    }
++
++    // Check for a ',', indicating that more <parameter>="<value>" pairs follow:
++  } while (*fields++ == ',');
++
++  delete[] parameter; delete[] value;
++  return success;
++}
++
++Boolean RTSPServer::RTSPClientConnection
++::authenticationOK(char const* cmdName, char const* urlSuffix, char const* fullRequestStr) {
++  // If we weren't set up with an authentication database, we're OK:
++  UserAuthenticationDatabase* authDB = fOurRTSPServer.getAuthenticationDatabaseForCommand(cmdName);
++  if (authDB == NULL) return True;
++  
++  char const* username = NULL; char const* realm = NULL; char const* nonce = NULL;
++  char const* uri = NULL; char const* response = NULL;
++  Boolean success = False;
++  
++  do {
++    // To authenticate, we first need to have a nonce set up
++    // from a previous attempt:
++    if (fCurrentAuthenticator.nonce() == NULL) break;
++    
++    // Next, the request needs to contain an "Authorization:" header,
++    // containing a username, (our) realm, (our) nonce, uri,
++    // and response string:
++    if (!parseAuthorizationHeader(fullRequestStr,
++				  username, realm, nonce, uri, response)
++	|| username == NULL
++	|| realm == NULL || strcmp(realm, fCurrentAuthenticator.realm()) != 0
++	|| nonce == NULL || strcmp(nonce, fCurrentAuthenticator.nonce()) != 0
++	|| uri == NULL || response == NULL) {
++      break;
++    }
++    
++    // Next, the username has to be known to us:
++    char const* password = authDB->lookupPassword(username);
++#ifdef DEBUG
++    fprintf(stderr, "lookupPassword(%s) returned password %s\n", username, password);
++#endif
++    if (password == NULL) break;
++    fCurrentAuthenticator.setUsernameAndPassword(username, password, authDB->passwordsAreMD5());
++    
++    // Finally, compute a digest response from the information that we have,
++    // and compare it to the one that we were given:
++    char const* ourResponse
++      = fCurrentAuthenticator.computeDigestResponse(cmdName, uri);
++    success = (strcmp(ourResponse, response) == 0);
++    fCurrentAuthenticator.reclaimDigestResponse(ourResponse);
++  } while (0);
++  
++  delete[] (char *)(uintptr_t)realm; delete[] (char *)(uintptr_t)nonce;
++  delete[] (char *)(uintptr_t)uri; delete[] (char *)(uintptr_t)response;
++  
++  if (success) {
++    // The user has been authenticated.
++    // Now allow subclasses a chance to validate the user against the IP address and/or URL suffix.
++    if (!fOurRTSPServer.specialClientUserAccessCheck(fClientInputSocket, fClientAddr, urlSuffix, username)) {
++      // Note: We don't return a "WWW-Authenticate" header here, because the user is valid,
++      // even though the server has decided that they should not have access.
++      setRTSPResponse("401 Unauthorized");
++      delete[] (char *)(uintptr_t)username;
++      return False;
++    }
++  }
++  delete[] (char *)(uintptr_t)username;
++  if (success) return True;
++  
++  // If we get here, we failed to authenticate the user.
++  // Send back a "401 Unauthorized" response, with a new random nonce:
++  Boolean isInitial401 = fCurrentAuthenticator.nonce() == NULL;
++  fCurrentAuthenticator.setRealmAndRandomNonce(authDB->realm());
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 401 Unauthorized\r\n"
++	   "CSeq: %s\r\n"
++	   "%s"
++	   "WWW-Authenticate: Digest realm=\"%s\", nonce=\"%s\"\r\n\r\n",
++	   fCurrentCSeq,
++	   dateHeader(),
++	   fCurrentAuthenticator.realm(), fCurrentAuthenticator.nonce());
++  if (!isInitial401) { // this is an actual authentication failure
++    fOurRTSPServer.specialHandlingOfAuthenticationFailure(fClientInputSocket, fClientAddr, urlSuffix);
++  }
++  return False;
++}
++
++void RTSPServer::RTSPClientConnection
++::setRTSPResponse(char const* responseStr) {
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 %s\r\n"
++	   "CSeq: %s\r\n"
++	   "%s\r\n",
++	   responseStr,
++	   fCurrentCSeq,
++	   dateHeader());
++}
++
++void RTSPServer::RTSPClientConnection
++::setRTSPResponse(char const* responseStr, u_int32_t sessionId) {
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 %s\r\n"
++	   "CSeq: %s\r\n"
++	   "%s"
++	   "Session: %08X\r\n\r\n",
++	   responseStr,
++	   fCurrentCSeq,
++	   dateHeader(),
++	   sessionId);
++}
++
++void RTSPServer::RTSPClientConnection
++::setRTSPResponse(char const* responseStr, char const* contentStr) {
++  if (contentStr == NULL) contentStr = "";
++  unsigned const contentLen = strlen(contentStr);
++  
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 %s\r\n"
++	   "CSeq: %s\r\n"
++	   "%s"
++	   "Content-Length: %d\r\n\r\n"
++	   "%s",
++	   responseStr,
++	   fCurrentCSeq,
++	   dateHeader(),
++	   contentLen,
++	   contentStr);
++}
++
++void RTSPServer::RTSPClientConnection
++::setRTSPResponse(char const* responseStr, u_int32_t sessionId, char const* contentStr) {
++  if (contentStr == NULL) contentStr = "";
++  unsigned const contentLen = strlen(contentStr);
++  
++  snprintf((char *)(uintptr_t)fResponseBuffer, sizeof fResponseBuffer,
++	   "RTSP/1.0 %s\r\n"
++	   "CSeq: %s\r\n"
++	   "%s"
++	   "Session: %08X\r\n"
++	   "Content-Length: %d\r\n\r\n"
++	   "%s",
++	   responseStr,
++	   fCurrentCSeq,
++	   dateHeader(),
++	   sessionId,
++	   contentLen,
++	   contentStr);
++}
++
++void RTSPServer::RTSPClientConnection
++::changeClientInputSocket(int newSocketNum, ServerTLSState const* newTLSState,
++			  unsigned char const* extraData, unsigned extraDataSize) {
++  // Change the socket number:
++  envir().taskScheduler().disableBackgroundHandling(fClientInputSocket);
++  fClientInputSocket = newSocketNum;
++  envir().taskScheduler().setBackgroundHandling(fClientInputSocket, SOCKET_READABLE|SOCKET_EXCEPTION,
++						incomingRequestHandler, this);
++  
++  // Change the TLS state:
++  fPOSTSocketTLS.assignStateFrom(*newTLSState);
++  fInputTLS = &fPOSTSocketTLS;
++  
++  // Also write any extra data to our buffer, and handle it:
++  if (extraDataSize > 0 && extraDataSize <= fRequestBufferBytesLeft/*sanity check; should always be true*/) {
++    unsigned char* ptr = &fRequestBuffer[fRequestBytesAlreadySeen];
++    for (unsigned i = 0; i < extraDataSize; ++i) {
++      ptr[i] = extraData[i];
++    }
++    handleRequestBytes(extraDataSize);
++  }
++}
++
++
++////////// RTSPServer::RTSPClientSession implementation //////////
++
++RTSPServer::RTSPClientSession
++::RTSPClientSession(RTSPServer& ourServer, u_int32_t sessionId)
++  : GenericMediaServer::ClientSession(ourServer, sessionId),
++    fOurRTSPServer(ourServer), fIsMulticast(False), fStreamAfterSETUP(False),
++    fTCPStreamIdCount(0), fNumStreamStates(0), fStreamStates(NULL) {
++}
++
++RTSPServer::RTSPClientSession::~RTSPClientSession() {
++  reclaimStreamStates();
++}
++
++void RTSPServer::RTSPClientSession::deleteStreamByTrack(unsigned trackNum) {
++  if (trackNum >= fNumStreamStates) return; // sanity check; shouldn't happen
++  if (fStreamStates[trackNum].subsession != NULL) {
++    fStreamStates[trackNum].subsession->deleteStream(fOurSessionId, fStreamStates[trackNum].streamToken);
++    fStreamStates[trackNum].subsession = NULL;
++  }
++  
++  // Optimization: If all subsessions have now been deleted, then we can delete ourself now:
++  Boolean noSubsessionsRemain = True;
++  for (unsigned i = 0; i < fNumStreamStates; ++i) {
++    if (fStreamStates[i].subsession != NULL) {
++      noSubsessionsRemain = False;
++      break;
++    }
++  }
++  if (noSubsessionsRemain) delete this;
++}
++
++void RTSPServer::RTSPClientSession::reclaimStreamStates() {
++  for (unsigned i = 0; i < fNumStreamStates; ++i) {
++    if (fStreamStates[i].subsession != NULL) {
++      fOurRTSPServer.unnoteTCPStreamingOnSocket(fStreamStates[i].tcpSocketNum, this, i);
++      fStreamStates[i].subsession->deleteStream(fOurSessionId, fStreamStates[i].streamToken);
++    }
++  }
++  delete[] fStreamStates; fStreamStates = NULL;
++  fNumStreamStates = 0;
++}
++
++typedef enum StreamingMode {
++  RTP_UDP,
++  RTP_TCP,
++  RAW_UDP
++} StreamingMode;
++
++static void parseTransportHeader(char const* buf,
++				 StreamingMode& streamingMode,
++				 char*& streamingModeString,
++				 char*& destinationAddressStr,
++				 u_int8_t& destinationTTL,
++				 portNumBits& clientRTPPortNum, // if UDP
++				 portNumBits& clientRTCPPortNum, // if UDP
++				 unsigned char& rtpChannelId, // if TCP
++				 unsigned char& rtcpChannelId // if TCP
++				 ) {
++  // Initialize the result parameters to default values:
++  streamingMode = RTP_UDP;
++  streamingModeString = NULL;
++  destinationAddressStr = NULL;
++  destinationTTL = 255;
++  clientRTPPortNum = 0;
++  clientRTCPPortNum = 1;
++  rtpChannelId = rtcpChannelId = 0xFF;
++  
++  portNumBits p1, p2;
++  unsigned ttl, rtpCid, rtcpCid;
++  
++  // First, find "Transport:"
++  while (1) {
++    if (*buf == '\0') return; // not found
++    if (*buf == '\r' && *(buf+1) == '\n' && *(buf+2) == '\r') return; // end of the headers => not found
++    if (_strncasecmp(buf, "Transport:", 10) == 0) break;
++    ++buf;
++  }
++  
++  // Then, run through each of the fields, looking for ones we handle:
++  char const* fields = buf + 10;
++  while (*fields == ' ') ++fields;
++  char* field = strDupSize(fields);
++  while (sscanf(fields, "%[^;\r\n]", field) == 1) {
++    if (strcmp(field, "RTP/AVP/TCP") == 0) {
++      streamingMode = RTP_TCP;
++    } else if (strcmp(field, "RAW/RAW/UDP") == 0 ||
++	       strcmp(field, "MP2T/H2221/UDP") == 0) {
++      streamingMode = RAW_UDP;
++      streamingModeString = strDup(field);
++    } else if (_strncasecmp(field, "destination=", 12) == 0) {
++      delete[] destinationAddressStr;
++      destinationAddressStr = strDup(field+12);
++    } else if (sscanf(field, "ttl%u", &ttl) == 1) {
++      destinationTTL = (u_int8_t)ttl;
++    } else if (sscanf(field, "client_port=%hu-%hu", &p1, &p2) == 2) {
++      clientRTPPortNum = p1;
++      clientRTCPPortNum = streamingMode == RAW_UDP ? 0 : p2; // ignore the second port number if the client asked for raw UDP
++    } else if (sscanf(field, "client_port=%hu", &p1) == 1) {
++      clientRTPPortNum = p1;
++      clientRTCPPortNum = streamingMode == RAW_UDP ? 0 : p1 + 1;
++    } else if (sscanf(field, "interleaved=%u-%u", &rtpCid, &rtcpCid) == 2) {
++      rtpChannelId = (unsigned char)rtpCid;
++      rtcpChannelId = (unsigned char)rtcpCid;
++    }
++    
++    fields += strlen(field);
++    while (*fields == ';' || *fields == ' ' || *fields == '\t') ++fields; // skip over separating ';' chars or whitespace
++    if (*fields == '\0' || *fields == '\r' || *fields == '\n') break;
++  }
++  delete[] field;
++}
++
++static Boolean parsePlayNowHeader(char const* buf) {
++  // Find "x-playNow:" header, if present
++  while (1) {
++    if (*buf == '\0') return False; // not found
++    if (_strncasecmp(buf, "x-playNow:", 10) == 0) break;
++    ++buf;
++  }
++  
++  return True;
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_SETUP(RTSPServer::RTSPClientConnection* ourClientConnection,
++		  char const* urlPreSuffix, char const* urlSuffix, char const* fullRequestStr) {
++  // Normally, "urlPreSuffix" should be the session (stream) name, and "urlSuffix" should be the subsession (track) name.
++  // However (being "liberal in what we accept"), we also handle 'aggregate' SETUP requests (i.e., without a track name),
++  // in the special case where we have only a single track.  I.e., in this case, we also handle:
++  //    "urlPreSuffix" is empty and "urlSuffix" is the session (stream) name, or
++  //    "urlPreSuffix" concatenated with "urlSuffix" (with "/" inbetween) is the session (stream) name.
++  fOurClientConnection = ourClientConnection;
++  fURLPreSuffix = urlPreSuffix; fURLSuffix = urlSuffix; fFullRequestStr = fullRequestStr;
++  fTrackId = urlSuffix; // in the normal case
++
++  // Begin by checking whether the specified stream name exists:
++  char const* streamName = urlPreSuffix; // in the normal case
++  fOurServer.lookupServerMediaSession(streamName, SETUPLookupCompletionFunction1, this,
++				      fOurServerMediaSession == NULL);
++}
++
++void RTSPServer::RTSPClientSession
++::SETUPLookupCompletionFunction1(void* clientData, ServerMediaSession* sessionLookedUp) {
++  RTSPServer::RTSPClientSession* session = (RTSPServer::RTSPClientSession*)clientData;
++  session->handleCmd_SETUP_afterLookup1(sessionLookedUp);
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_SETUP_afterLookup1(ServerMediaSession* sms) {
++  if (sms != NULL) {
++    // The lookup succeeded; continue working with the returned "ServerMediaSession":
++    handleCmd_SETUP_afterLookup2(sms);
++    return;
++  }
++
++  // The lookup failed.  Check for the special case (noted above), before we give up:
++  char const* streamName;
++  char* concatenatedStreamName = NULL;
++
++  if (fURLPreSuffix[0] == '\0') {
++    streamName = fURLSuffix;
++  } else {
++    concatenatedStreamName = new char[strlen(fURLPreSuffix) + strlen(fURLSuffix) + 2]; // allow for the "/" and the trailing '\0'
++    snprintf(concatenatedStreamName, sizeof(concatenatedStreamName), "%s/%s", fURLPreSuffix, fURLSuffix);
++    streamName = concatenatedStreamName;
++  }
++  fTrackId = NULL;
++      
++  // Check again:
++  fOurServer.lookupServerMediaSession(streamName, SETUPLookupCompletionFunction2, this,
++				      fOurServerMediaSession == NULL);
++  delete[] concatenatedStreamName;
++}
++
++void RTSPServer::RTSPClientSession
++::SETUPLookupCompletionFunction2(void* clientData, ServerMediaSession* sessionLookedUp) {
++  RTSPServer::RTSPClientSession* session = (RTSPServer::RTSPClientSession*)clientData;
++  session->handleCmd_SETUP_afterLookup2(sessionLookedUp);
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_SETUP_afterLookup2(ServerMediaSession* sms) {
++  do {
++    if (sms == NULL) {
++      if (fOurServerMediaSession == NULL) {
++	// The client asked for a stream that doesn't exist (and this session descriptor has not been used before):
++	fOurClientConnection->handleCmd_notFound();
++      } else {
++	// The client asked for a stream that doesn't exist, but using a stream id for a stream that does exist. Bad request:
++	fOurClientConnection->handleCmd_bad();
++      }
++      break;
++    } else {
++      if (fOurServerMediaSession == NULL) {
++	// We're accessing the "ServerMediaSession" for the first time.
++	fOurServerMediaSession = sms;
++	fOurServerMediaSession->incrementReferenceCount();
++      } else if (sms != fOurServerMediaSession) {
++	// The client asked for a stream that's different from the one originally requested for this stream id.  Bad request:
++	fOurClientConnection->handleCmd_bad();
++	break;
++      }
++    }
++    
++    if (fStreamStates == NULL) {
++      // This is the first "SETUP" for this session.  Set up our array of states for all of this session's subsessions (tracks):
++      fNumStreamStates = fOurServerMediaSession->numSubsessions();
++      fStreamStates = new struct streamState[fNumStreamStates];
++      
++      ServerMediaSubsessionIterator iter(*fOurServerMediaSession);
++      ServerMediaSubsession* subsession;
++      for (unsigned i = 0; i < fNumStreamStates; ++i) {
++	subsession = iter.next();
++	fStreamStates[i].subsession = subsession;
++	fStreamStates[i].tcpSocketNum = -1; // for now; may get set for RTP-over-TCP streaming
++	fStreamStates[i].streamToken = NULL; // for now; it may be changed by the "getStreamParameters()" call that comes later
++      }
++#ifdef LOG_RTSPSERVER_ACCESS
++       FILE* logfid = fopen("live555.log", "a");
++       if (logfid != NULL) {
++	 time_t tm = time(NULL);
++	 char * tmstr = ctime(&tm);
++	 fwrite(fURLPreSuffix, 1, strlen(fURLPreSuffix), logfid);
++	 fwrite(", ",1,2,logfid);
++	 fwrite(tmstr, 1, strlen(tmstr), logfid);
++	 fclose(logfid);
++       }
++#endif
++    }
++    
++    // Look up information for the specified subsession (track):
++    ServerMediaSubsession* subsession = NULL;
++    unsigned trackNum;
++    if (fTrackId != NULL && fTrackId[0] != '\0') { // normal case
++      for (trackNum = 0; trackNum < fNumStreamStates; ++trackNum) {
++	subsession = fStreamStates[trackNum].subsession;
++	if (subsession != NULL && strcmp(fTrackId, subsession->trackId()) == 0) break;
++      }
++      if (trackNum >= fNumStreamStates) {
++	// The specified track id doesn't exist, so this request fails:
++	fOurClientConnection->handleCmd_notFound();
++	break;
++      }
++    } else {
++      // Weird case: there was no track id in the URL.
++      // This works only if we have only one subsession:
++      if (fNumStreamStates != 1 || fStreamStates[0].subsession == NULL) {
++	fOurClientConnection->handleCmd_bad();
++	break;
++      }
++      trackNum = 0;
++      subsession = fStreamStates[trackNum].subsession;
++    }
++    // ASSERT: subsession != NULL
++    
++    void*& token = fStreamStates[trackNum].streamToken; // alias
++    if (token != NULL) {
++      // We already handled a "SETUP" for this track (to the same client),
++      // so stop any existing streaming of it, before we set it up again:
++      subsession->pauseStream(fOurSessionId, token);
++      fOurRTSPServer.unnoteTCPStreamingOnSocket(fStreamStates[trackNum].tcpSocketNum, this, trackNum);
++      subsession->deleteStream(fOurSessionId, token);
++    }
++
++    // Look for a "Transport:" header in the request string, to extract client parameters:
++    StreamingMode streamingMode;
++    char* streamingModeString = NULL; // set when RAW_UDP streaming is specified
++    char* clientsDestinationAddressStr;
++    u_int8_t clientsDestinationTTL;
++    portNumBits clientRTPPortNum, clientRTCPPortNum;
++    unsigned char rtpChannelId, rtcpChannelId;
++    parseTransportHeader(fFullRequestStr, streamingMode, streamingModeString,
++			 clientsDestinationAddressStr, clientsDestinationTTL,
++			 clientRTPPortNum, clientRTCPPortNum,
++			 rtpChannelId, rtcpChannelId);
++    if ((streamingMode == RTP_TCP && rtpChannelId == 0xFF) ||
++	(streamingMode != RTP_TCP && fOurClientConnection->fClientOutputSocket != fOurClientConnection->fClientInputSocket)) {
++      // An anomolous situation, caused by a buggy client.  Either:
++      //     1/ TCP streaming was requested, but with no "interleaving=" fields.  (QuickTime Player sometimes does this.), or
++      //     2/ TCP streaming was not requested, but we're doing RTSP-over-HTTP tunneling (which implies TCP streaming).
++      // In either case, we assume TCP streaming, and set the RTP and RTCP channel ids to proper values:
++      streamingMode = RTP_TCP;
++      rtpChannelId = fTCPStreamIdCount; rtcpChannelId = fTCPStreamIdCount+1;
++    }
++    if (streamingMode == RTP_TCP) fTCPStreamIdCount += 2;
++    
++    Port clientRTPPort(clientRTPPortNum);
++    Port clientRTCPPort(clientRTCPPortNum);
++    
++    // Next, check whether a "Range:" or "x-playNow:" header is present in the request.
++    // This isn't legal, but some clients do this to combine "SETUP" and "PLAY":
++    double rangeStart = 0.0, rangeEnd = 0.0;
++    char* absStart = NULL; char* absEnd = NULL;
++    Boolean startTimeIsNow;
++    if (parseRangeHeader(fFullRequestStr, rangeStart, rangeEnd, absStart, absEnd, startTimeIsNow)) {
++      delete[] absStart; delete[] absEnd;
++      fStreamAfterSETUP = True;
++    } else if (parsePlayNowHeader(fFullRequestStr)) {
++      fStreamAfterSETUP = True;
++    } else {
++      fStreamAfterSETUP = False;
++    }
++    
++    // Then, get server parameters from the 'subsession':
++    if (streamingMode == RTP_TCP) {
++      // Note that we'll be streaming over the RTSP TCP connection:
++      fStreamStates[trackNum].tcpSocketNum = fOurClientConnection->fClientOutputSocket;
++      fOurRTSPServer.noteTCPStreamingOnSocket(fStreamStates[trackNum].tcpSocketNum, this, trackNum);
++    }
++    struct sockaddr_storage destinationAddress = nullAddress();
++        // used to indicate that the address is 'unassigned'
++    u_int8_t destinationTTL = 255;
++#ifdef RTSP_ALLOW_CLIENT_DESTINATION_SETTING
++    if (clientsDestinationAddressStr != NULL) {
++      // Use the client-provided "destination" address.
++      // Note: This potentially allows the server to be used in denial-of-service
++      // attacks, so don't enable this code unless you're sure that clients are
++      // trusted.
++      NetAddressList destAddresses(clientsDestinationAddressStr);
++      if (destAddresses.numAddresses() > 0) {
++	copyAddress(destinationAddress, destAddresses.firstAddress());
++      }
++    }
++    // Also use the client-provided TTL.
++    destinationTTL = clientsDestinationTTL;
++#endif
++    delete[] clientsDestinationAddressStr;
++    Port serverRTPPort(0);
++    Port serverRTCPPort(0);
++    
++    // Make sure that we transmit on the same interface that's used by the client
++    // (in case we're a multi-homed server):
++    struct sockaddr_storage sourceAddr; SOCKLEN_T namelen = sizeof sourceAddr;
++    getsockname(fOurClientConnection->fClientInputSocket, (struct sockaddr*)&sourceAddr, &namelen);
++    
++    subsession->getStreamParameters(fOurSessionId, fOurClientConnection->fClientAddr,
++				    clientRTPPort, clientRTCPPort,
++				    fStreamStates[trackNum].tcpSocketNum, rtpChannelId, rtcpChannelId,
++                                    &fOurClientConnection->fTLS,
++				    destinationAddress, destinationTTL, fIsMulticast,
++				    serverRTPPort, serverRTCPPort,
++				    fStreamStates[trackNum].streamToken);
++    
++    AddressString destAddrStr(destinationAddress);
++    AddressString sourceAddrStr(sourceAddr);
++    char timeoutParameterString[100];
++    if (fOurRTSPServer.fReclamationSeconds > 0) {
++      snprintf(timeoutParameterString, sizeof(timeoutParameterString), ";timeout=%u", fOurRTSPServer.fReclamationSeconds);
++    } else {
++      timeoutParameterString[0] = '\0';
++    }
++    if (fIsMulticast) {
++      switch (streamingMode) {
++          case RTP_UDP: {
++	    snprintf((char *)(uintptr_t)fOurClientConnection->fResponseBuffer, sizeof fOurClientConnection->fResponseBuffer,
++		     "RTSP/1.0 200 OK\r\n"
++		     "CSeq: %s\r\n"
++		     "%s"
++		     "Transport: RTP/%s;multicast;destination=%s;source=%s;port=%d-%d;ttl=%d\r\n"
++		     "Session: %08X%s\r\n\r\n",
++		     fOurClientConnection->fCurrentCSeq,
++		     dateHeader(),
++		     fOurRTSPServer.fWeServeSRTP ? "SAVP" : "AVP",
++		     destAddrStr.val(), sourceAddrStr.val(), ntohs(serverRTPPort.num()), ntohs(serverRTCPPort.num()), destinationTTL,
++		     fOurSessionId, timeoutParameterString);
++	    break;
++	  }
++          case RTP_TCP: {
++	    // multicast streams can't be sent via TCP
++	    fOurClientConnection->handleCmd_unsupportedTransport();
++	    break;
++	  }
++          case RAW_UDP: {
++	    snprintf((char *)(uintptr_t)fOurClientConnection->fResponseBuffer, sizeof fOurClientConnection->fResponseBuffer,
++		     "RTSP/1.0 200 OK\r\n"
++		     "CSeq: %s\r\n"
++		     "%s"
++		     "Transport: %s;multicast;destination=%s;source=%s;port=%d;ttl=%d\r\n"
++		     "Session: %08X%s\r\n\r\n",
++		     fOurClientConnection->fCurrentCSeq,
++		     dateHeader(),
++		     streamingModeString, destAddrStr.val(), sourceAddrStr.val(), ntohs(serverRTPPort.num()), destinationTTL,
++		     fOurSessionId, timeoutParameterString);
++	    break;
++	  }
++      }
++    } else {
++      switch (streamingMode) {
++          case RTP_UDP: {
++	    snprintf((char *)(uintptr_t)fOurClientConnection->fResponseBuffer, sizeof fOurClientConnection->fResponseBuffer,
++		     "RTSP/1.0 200 OK\r\n"
++		     "CSeq: %s\r\n"
++		     "%s"
++		     "Transport: RTP/%s;unicast;destination=%s;source=%s;client_port=%d-%d;server_port=%d-%d\r\n"
++		     "Session: %08X%s\r\n\r\n",
++		     fOurClientConnection->fCurrentCSeq,
++		     dateHeader(),
++		     fOurRTSPServer.fWeServeSRTP ? "SAVP" : "AVP",
++		     destAddrStr.val(), sourceAddrStr.val(), ntohs(clientRTPPort.num()), ntohs(clientRTCPPort.num()), ntohs(serverRTPPort.num()), ntohs(serverRTCPPort.num()),
++		     fOurSessionId, timeoutParameterString);
++	    break;
++	  }
++          case RTP_TCP: {
++	    if (!fOurRTSPServer.fAllowStreamingRTPOverTCP) {
++	      fOurClientConnection->handleCmd_unsupportedTransport();
++	    } else {
++	      snprintf((char *)(uintptr_t)fOurClientConnection->fResponseBuffer, sizeof fOurClientConnection->fResponseBuffer,
++		       "RTSP/1.0 200 OK\r\n"
++		       "CSeq: %s\r\n"
++		       "%s"
++		       "Transport: RTP/AVP/TCP;unicast;destination=%s;source=%s;interleaved=%d-%d\r\n"
++		       "Session: %08X%s\r\n\r\n",
++		       fOurClientConnection->fCurrentCSeq,
++		       dateHeader(),
++		       destAddrStr.val(), sourceAddrStr.val(), rtpChannelId, rtcpChannelId,
++		       fOurSessionId, timeoutParameterString);
++	    }
++	    break;
++	  }
++          case RAW_UDP: {
++	    snprintf((char *)(uintptr_t)fOurClientConnection->fResponseBuffer, sizeof fOurClientConnection->fResponseBuffer,
++		     "RTSP/1.0 200 OK\r\n"
++		     "CSeq: %s\r\n"
++		     "%s"
++		     "Transport: %s;unicast;destination=%s;source=%s;client_port=%d;server_port=%d\r\n"
++		     "Session: %08X%s\r\n\r\n",
++		     fOurClientConnection->fCurrentCSeq,
++		     dateHeader(),
++		     streamingModeString, destAddrStr.val(), sourceAddrStr.val(), ntohs(clientRTPPort.num()), ntohs(serverRTPPort.num()),
++		     fOurSessionId, timeoutParameterString);
++	    break;
++	  }
++      }
++    }
++    delete[] streamingModeString;
++  } while (0);
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_withinSession(RTSPServer::RTSPClientConnection* ourClientConnection,
++			  char const* cmdName,
++			  char const* urlPreSuffix, char const* urlSuffix,
++			  char const* fullRequestStr) {
++  // This will either be:
++  // - a non-aggregated operation, if "urlPreSuffix" is the session (stream)
++  //   name and "urlSuffix" is the subsession (track) name, or
++  // - an aggregated operation, if "urlSuffix" is the session (stream) name,
++  //   or "urlPreSuffix" is the session (stream) name, and "urlSuffix" is empty,
++  //   or "urlPreSuffix" and "urlSuffix" are both nonempty, but when concatenated, (with "/") form the session (stream) name.
++  // Begin by figuring out which of these it is:
++  ServerMediaSubsession* subsession;
++  
++  if (fOurServerMediaSession == NULL) { // There wasn't a previous SETUP!
++    ourClientConnection->handleCmd_notSupported();
++    return;
++  } else if (urlSuffix[0] != '\0' && strcmp(fOurServerMediaSession->streamName(), urlPreSuffix) == 0) {
++    // Non-aggregated operation.
++    // Look up the media subsession whose track id is "urlSuffix":
++    ServerMediaSubsessionIterator iter(*fOurServerMediaSession);
++    while ((subsession = iter.next()) != NULL) {
++      if (strcmp(subsession->trackId(), urlSuffix) == 0) break; // success
++    }
++    if (subsession == NULL) { // no such track!
++      ourClientConnection->handleCmd_notFound();
++      return;
++    }
++  } else if (strcmp(fOurServerMediaSession->streamName(), urlSuffix) == 0 ||
++	     (urlSuffix[0] == '\0' && strcmp(fOurServerMediaSession->streamName(), urlPreSuffix) == 0)) {
++    // Aggregated operation
++    subsession = NULL;
++  } else if (urlPreSuffix[0] != '\0' && urlSuffix[0] != '\0') {
++    // Aggregated operation, if <urlPreSuffix>/<urlSuffix> is the session (stream) name:
++    unsigned const urlPreSuffixLen = strlen(urlPreSuffix);
++    if (strncmp(fOurServerMediaSession->streamName(), urlPreSuffix, urlPreSuffixLen) == 0 &&
++	fOurServerMediaSession->streamName()[urlPreSuffixLen] == '/' &&
++	strcmp(&(fOurServerMediaSession->streamName())[urlPreSuffixLen+1], urlSuffix) == 0) {
++      subsession = NULL;
++    } else {
++      ourClientConnection->handleCmd_notFound();
++      return;
++    }
++  } else { // the request doesn't match a known stream and/or track at all!
++    ourClientConnection->handleCmd_notFound();
++    return;
++  }
++  
++  if (strcmp(cmdName, "TEARDOWN") == 0) {
++    handleCmd_TEARDOWN(ourClientConnection, subsession);
++  } else if (strcmp(cmdName, "PLAY") == 0) {
++    handleCmd_PLAY(ourClientConnection, subsession, fullRequestStr);
++  } else if (strcmp(cmdName, "PAUSE") == 0) {
++    handleCmd_PAUSE(ourClientConnection, subsession);
++  } else if (strcmp(cmdName, "GET_PARAMETER") == 0) {
++    handleCmd_GET_PARAMETER(ourClientConnection, subsession, fullRequestStr);
++  } else if (strcmp(cmdName, "SET_PARAMETER") == 0) {
++    handleCmd_SET_PARAMETER(ourClientConnection, subsession, fullRequestStr);
++  }
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_TEARDOWN(RTSPServer::RTSPClientConnection* ourClientConnection,
++		     ServerMediaSubsession* subsession) {
++  unsigned i;
++  for (i = 0; i < fNumStreamStates; ++i) {
++    if (subsession == NULL /* means: aggregated operation */
++	|| subsession == fStreamStates[i].subsession) {
++      if (fStreamStates[i].subsession != NULL) {
++	fOurRTSPServer.unnoteTCPStreamingOnSocket(fStreamStates[i].tcpSocketNum, this, i);
++	fStreamStates[i].subsession->deleteStream(fOurSessionId, fStreamStates[i].streamToken);
++	fStreamStates[i].subsession = NULL;
++      }
++    }
++  }
++  
++  setRTSPResponse(ourClientConnection, "200 OK");
++  
++  // Optimization: If all subsessions have now been torn down, then we know that we can reclaim our object now.
++  // (Without this optimization, however, this object would still get reclaimed later, as a result of a 'liveness' timeout.)
++  Boolean noSubsessionsRemain = True;
++  for (i = 0; i < fNumStreamStates; ++i) {
++    if (fStreamStates[i].subsession != NULL) {
++      noSubsessionsRemain = False;
++      break;
++    }
++  }
++  if (noSubsessionsRemain) delete this;
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_PLAY(RTSPServer::RTSPClientConnection* ourClientConnection,
++		 ServerMediaSubsession* subsession, char const* fullRequestStr) {
++  char* rtspURL
++    = fOurRTSPServer.rtspURL(fOurServerMediaSession, ourClientConnection->fClientInputSocket);
++  unsigned rtspURLSize = strlen(rtspURL);
++  
++  // Parse the client's "Scale:" header, if any:
++  float scale;
++  Boolean sawScaleHeader = parseScaleHeader(fullRequestStr, scale);
++  
++  // Try to set the stream's scale factor to this value:
++  if (subsession == NULL /*aggregate op*/) {
++    fOurServerMediaSession->testScaleFactor(scale);
++  } else {
++    subsession->testScaleFactor(scale);
++  }
++  
++  char buf[100];
++  char* scaleHeader;
++  if (!sawScaleHeader) {
++    buf[0] = '\0'; // Because we didn't see a Scale: header, don't send one back
++  } else {
++    snprintf(buf, sizeof(buf), "Scale: %f\r\n", scale);
++  }
++  scaleHeader = strDup(buf);
++  
++  // Parse the client's "Range:" header, if any:
++  float duration = 0.0;
++  double rangeStart = 0.0, rangeEnd = 0.0;
++  char* absStart = NULL; char* absEnd = NULL;
++  Boolean startTimeIsNow;
++  Boolean sawRangeHeader
++    = parseRangeHeader(fullRequestStr, rangeStart, rangeEnd, absStart, absEnd, startTimeIsNow);
++  
++  if (sawRangeHeader && absStart == NULL/*not seeking by 'absolute' time*/) {
++    // Use this information, plus the stream's duration (if known), to create our own "Range:" header, for the response:
++    duration = subsession == NULL /*aggregate op*/
++      ? fOurServerMediaSession->duration() : subsession->duration();
++    if (duration < 0.0) {
++      // We're an aggregate PLAY, but the subsessions have different durations.
++      // Use the largest of these durations in our header
++      duration = -duration;
++    }
++    
++    // Make sure that "rangeStart" and "rangeEnd" (from the client's "Range:" header)
++    // have sane values, before we send back our own "Range:" header in our response:
++    if (rangeStart < 0.0) rangeStart = 0.0;
++    else if (rangeStart > duration) rangeStart = duration;
++    if (rangeEnd < 0.0) rangeEnd = 0.0;
++    else if (rangeEnd > duration) rangeEnd = duration;
++    if ((scale > 0.0 && rangeStart > rangeEnd && rangeEnd > 0.0) ||
++	(scale < 0.0 && rangeStart < rangeEnd)) {
++      // "rangeStart" and "rangeEnd" were the wrong way around; swap them:
++      double tmp = rangeStart;
++      rangeStart = rangeEnd;
++      rangeEnd = tmp;
++    }
++  }
++  
++  // Create a "RTP-Info:" line.  It will get filled in from each subsession's state:
++  char const* rtpInfoFmt =
++    "%s" // "RTP-Info:", plus any preceding rtpInfo items
++    "%s" // comma separator, if needed
++    "url=%s/%s"
++    ";seq=%d"
++    ";rtptime=%u"
++    ;
++  unsigned rtpInfoFmtSize = strlen(rtpInfoFmt);
++  char* rtpInfo = strDup("RTP-Info: ");
++  unsigned i, numRTPInfoItems = 0;
++  
++  // Do any required seeking/scaling on each subsession, before starting streaming.
++  // (However, we don't do this if the "PLAY" request was for just a single subsession
++  // of a multiple-subsession stream; for such streams, seeking/scaling can be done
++  // only with an aggregate "PLAY".)
++  for (i = 0; i < fNumStreamStates; ++i) {
++    if (subsession == NULL /* means: aggregated operation */ || fNumStreamStates == 1) {
++      if (fStreamStates[i].subsession != NULL) {
++	if (sawScaleHeader) {
++	  fStreamStates[i].subsession->setStreamScale(fOurSessionId, fStreamStates[i].streamToken, scale);
++	}
++	if (absStart != NULL) {
++	  // Special case handling for seeking by 'absolute' time:
++	
++	  fStreamStates[i].subsession->seekStream(fOurSessionId, fStreamStates[i].streamToken, absStart, absEnd);
++	} else {
++	  // Seeking by relative (NPT) time:
++	  
++	  u_int64_t numBytes;
++	  if (!sawRangeHeader || startTimeIsNow) {
++	    // We're resuming streaming without seeking, so we just do a 'null' seek
++	    // (to get our NPT, and to specify when to end streaming):
++	    fStreamStates[i].subsession->nullSeekStream(fOurSessionId, fStreamStates[i].streamToken,
++							rangeEnd, numBytes);
++	  } else {
++	    // We do a real 'seek':
++	    double streamDuration = 0.0; // by default; means: stream until the end of the media
++	    if (rangeEnd > 0.0 && (rangeEnd+0.001) < duration) {
++	      // the 0.001 is because we limited the values to 3 decimal places
++	      // We want the stream to end early.  Set the duration we want:
++	      streamDuration = rangeEnd - rangeStart;
++	      if (streamDuration < 0.0) streamDuration = -streamDuration;
++	          // should happen only if scale < 0.0
++	    }
++	    fStreamStates[i].subsession->seekStream(fOurSessionId, fStreamStates[i].streamToken,
++						    rangeStart, streamDuration, numBytes);
++	  }
++	}
++      }
++    }
++  }
++  
++  // Create the "Range:" header that we'll send back in our response.
++  // (Note that we do this after seeking, in case the seeking operation changed the range start time.)
++  char* rangeHeader;
++  if (absStart != NULL) {
++    // We're seeking by 'absolute' time:
++    char* rangeHeaderBuf;
++    
++    if (absEnd == NULL) {
++      rangeHeaderBuf = new char[100 + strlen(absStart)]; // ample space
++      snprintf(rangeHeaderBuf, sizeof(rangeHeaderBuf), "Range: clock=%s-\r\n", absStart);
++    } else {
++      rangeHeaderBuf = new char[100 + strlen(absStart) + strlen(absEnd)]; // ample space
++      snprintf(rangeHeaderBuf, sizeof(rangeHeaderBuf), "Range: clock=%s-%s\r\n", absStart, absEnd);
++    }
++    delete[] absStart; delete[] absEnd;
++    rangeHeader = strDup(rangeHeaderBuf);
++    delete[] rangeHeaderBuf;
++  } else {
++    // We're seeking by relative (NPT) time:
++    if (!sawRangeHeader || startTimeIsNow) {
++      // We didn't seek, so in our response, begin the range with the current NPT (normal play time):
++      float curNPT = 0.0;
++      for (i = 0; i < fNumStreamStates; ++i) {
++	if (subsession == NULL /* means: aggregated operation */
++	    || subsession == fStreamStates[i].subsession) {
++	  if (fStreamStates[i].subsession == NULL) continue;
++	  float npt = fStreamStates[i].subsession->getCurrentNPT(fStreamStates[i].streamToken);
++	  if (npt > curNPT) curNPT = npt;
++	  // Note: If this is an aggregate "PLAY" on a multi-subsession stream,
++	  // then it's conceivable that the NPTs of each subsession may differ
++	  // (if there has been a previous seek on just one subsession).
++	  // In this (unusual) case, we just return the largest NPT; I hope that turns out OK...
++	}
++      }
++      rangeStart = curNPT;
++    }
++
++    if (rangeEnd == 0.0 && scale >= 0.0) {
++      snprintf(buf, sizeof(buf), "Range: npt=%.3f-\r\n", rangeStart);
++    } else {
++      snprintf(buf, sizeof(buf), "Range: npt=%.3f-%.3f\r\n", rangeStart, rangeEnd);
++    }
++    rangeHeader = strDup(buf);
++  }
++  
++  // Now, start streaming:
++  for (i = 0; i < fNumStreamStates; ++i) {
++    if (subsession == NULL /* means: aggregated operation */
++	|| subsession == fStreamStates[i].subsession) {
++      unsigned short rtpSeqNum = 0;
++      unsigned rtpTimestamp = 0;
++      if (fStreamStates[i].subsession == NULL) continue;
++      fStreamStates[i].subsession->startStream(fOurSessionId,
++					       fStreamStates[i].streamToken,
++					       (TaskFunc*)noteClientLiveness, this,
++					       rtpSeqNum, rtpTimestamp,
++					       RTSPServer::RTSPClientConnection::handleAlternativeRequestByte, ourClientConnection);
++      const char *urlSuffix = fStreamStates[i].subsession->trackId();
++      char* prevRTPInfo = rtpInfo;
++      unsigned rtpInfoSize = rtpInfoFmtSize
++	+ strlen(prevRTPInfo)
++	+ 1
++	+ rtspURLSize + strlen(urlSuffix)
++	+ 5 /*max unsigned short len*/
++	+ 10 /*max unsigned (32-bit) len*/
++	+ 2 /*allows for trailing \r\n at final end of string*/;
++      rtpInfo = new char[rtpInfoSize];
++      snprintf(rtpInfo, sizeof(rtpInfo), rtpInfoFmt,
++	      prevRTPInfo,
++	      numRTPInfoItems++ == 0 ? "" : ",",
++	      rtspURL, urlSuffix,
++	      rtpSeqNum,
++	      rtpTimestamp
++	      );
++      delete[] prevRTPInfo;
++    }
++  }
++  if (numRTPInfoItems == 0) {
++    rtpInfo[0] = '\0';
++  } else {
++    unsigned rtpInfoLen = strlen(rtpInfo);
++    rtpInfo[rtpInfoLen] = '\r';
++    rtpInfo[rtpInfoLen+1] = '\n';
++    rtpInfo[rtpInfoLen+2] = '\0';
++  }
++  
++  // Fill in the response:
++  snprintf((char *)(uintptr_t)ourClientConnection->fResponseBuffer, sizeof ourClientConnection->fResponseBuffer,
++	   "RTSP/1.0 200 OK\r\n"
++	   "CSeq: %s\r\n"
++	   "%s"
++	   "%s"
++	   "%s"
++	   "Session: %08X\r\n"
++	   "%s\r\n",
++	   ourClientConnection->fCurrentCSeq,
++	   dateHeader(),
++	   scaleHeader,
++	   rangeHeader,
++	   fOurSessionId,
++	   rtpInfo);
++  delete[] rtpInfo; delete[] rangeHeader;
++  delete[] scaleHeader; delete[] rtspURL;
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_PAUSE(RTSPServer::RTSPClientConnection* ourClientConnection,
++		  ServerMediaSubsession* subsession) {
++  for (unsigned i = 0; i < fNumStreamStates; ++i) {
++    if (subsession == NULL /* means: aggregated operation */
++	|| subsession == fStreamStates[i].subsession) {
++      if (fStreamStates[i].subsession != NULL) {
++	fStreamStates[i].subsession->pauseStream(fOurSessionId, fStreamStates[i].streamToken);
++      }
++    }
++  }
++  
++  setRTSPResponse(ourClientConnection, "200 OK", fOurSessionId);
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_GET_PARAMETER(RTSPServer::RTSPClientConnection* ourClientConnection,
++			  ServerMediaSubsession* /*subsession*/, char const* /*fullRequestStr*/) {
++  // By default, we implement "GET_PARAMETER" just as a 'keep alive', and send back a dummy response.
++  // (If you want to handle "GET_PARAMETER" properly, you can do so by defining a subclass of "RTSPServer"
++  // and "RTSPServer::RTSPClientSession", and then reimplement this virtual function in your subclass.)
++  setRTSPResponse(ourClientConnection, "200 OK", fOurSessionId, LIVEMEDIA_LIBRARY_VERSION_STRING);
++}
++
++void RTSPServer::RTSPClientSession
++::handleCmd_SET_PARAMETER(RTSPServer::RTSPClientConnection* ourClientConnection,
++			  ServerMediaSubsession* /*subsession*/, char const* /*fullRequestStr*/) {
++  // By default, we implement "SET_PARAMETER" just as a 'keep alive', and send back an empty response.
++  // (If you want to handle "SET_PARAMETER" properly, you can do so by defining a subclass of "RTSPServer"
++  // and "RTSPServer::RTSPClientSession", and then reimplement this virtual function in your subclass.)
++  setRTSPResponse(ourClientConnection, "200 OK", fOurSessionId);
++}
++
++GenericMediaServer::ClientConnection*
++RTSPServer::createNewClientConnection(int clientSocket, struct sockaddr_storage const& clientAddr) {
++  return new RTSPClientConnection(*this, clientSocket, clientAddr, fOurConnectionsUseTLS);
++}
++
++GenericMediaServer::ClientSession*
++RTSPServer::createNewClientSession(u_int32_t sessionId) {
++  return new RTSPClientSession(*this, sessionId);
++}
+diff -Naur live.step3/liveMedia/RTSPServerRegister.cpp live/liveMedia/RTSPServerRegister.cpp
+--- live.step3/liveMedia/RTSPServerRegister.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/RTSPServerRegister.cpp	2025-11-30 15:11:52.715221164 +0900
+@@ -363,8 +363,9 @@
+   if (fAllowedCommandNames == NULL) {
+     char const* baseAllowedCommandNames = RTSPServer::allowedCommandNames();
+     char const* newAllowedCommandName = ", REGISTER, DEREGISTER";
+-    fAllowedCommandNames = new char[strlen(baseAllowedCommandNames) + strlen(newAllowedCommandName) + 1/* for '\0' */];
+-    sprintf(fAllowedCommandNames, "%s%s", baseAllowedCommandNames, newAllowedCommandName);
++    unsigned const fAllowedCommandNamesSize = strlen(baseAllowedCommandNames) + strlen(newAllowedCommandName) + 1/* for '\0' */;
++    fAllowedCommandNames = new char[fAllowedCommandNamesSize];
++    snprintf(fAllowedCommandNames, fAllowedCommandNamesSize, "%s%s", baseAllowedCommandNames, newAllowedCommandName);
+   }
+   return fAllowedCommandNames;
+ }
+@@ -403,7 +404,7 @@
+   char const* proxyStreamName;
+   char proxyStreamNameBuf[100];
+   if (proxyURLSuffix == NULL) {
+-    sprintf(proxyStreamNameBuf, "registeredProxyStream-%u", ++fRegisteredProxyCounter);
++    snprintf(proxyStreamNameBuf, sizeof(proxyStreamNameBuf), "registeredProxyStream-%u", ++fRegisteredProxyCounter);
+     proxyStreamName = proxyStreamNameBuf;
+   } else {
+     proxyStreamName = proxyURLSuffix;
+diff -Naur live.step3/liveMedia/RawVideoRTPSink.cpp live/liveMedia/RawVideoRTPSink.cpp
+--- live.step3/liveMedia/RawVideoRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/RawVideoRTPSink.cpp	2025-11-30 15:11:52.706221004 +0900
+@@ -44,7 +44,7 @@
+   unsigned const fmtpSDPLineMaxSize
+     = 200 + strlen(sampling) + strlen(colorimetry); // more than enough space
+   fFmtpSDPLine = new char[fmtpSDPLineMaxSize];
+-  sprintf(fFmtpSDPLine, "a=fmtp:%d sampling=%s;width=%u;height=%u;depth=%u;colorimetry=%s\r\n",
++  snprintf(fFmtpSDPLine, 1000, "a=fmtp:%d sampling=%s;width=%u;height=%u;depth=%u;colorimetry=%s\r\n",
+ 	  rtpPayloadType(), sampling, width, height, depth, colorimetry);
+ }
+ 
+diff -Naur live.step3/liveMedia/SIPClient.cpp live/liveMedia/SIPClient.cpp
+--- live.step3/liveMedia/SIPClient.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/SIPClient.cpp	2025-11-30 15:11:52.715221164 +0900
+@@ -46,7 +46,7 @@
+   unsigned const headerSize = strlen(formatStr) + strlen(userAgentName);
+   delete[] fUserAgentHeaderStr;
+   fUserAgentHeaderStr = new char[headerSize];
+-  sprintf(fUserAgentHeaderStr, formatStr, userAgentName);
++  snprintf(fUserAgentHeaderStr, headerSize, formatStr, userAgentName);
+   fUserAgentHeaderStrLen = strlen(fUserAgentHeaderStr);
+ }
+ 
+@@ -117,7 +117,7 @@
+   unsigned userAgentNameSize
+     = fApplicationNameSize + strlen(libPrefix) + strlen(libName) + strlen(liveMediaLibraryVersionStr) + strlen(libSuffix) + 1;
+   char* userAgentName = new char[userAgentNameSize];
+-  sprintf(userAgentName, "%s%s%s%s%s",
++  snprintf(userAgentName, userAgentNameSize, "%s%s%s%s%s",
+ 	  applicationName, libPrefix, libName, liveMediaLibraryVersionStr, libSuffix);
+   setUserAgentString(userAgentName);
+   delete[] userAgentName;
+@@ -217,7 +217,7 @@
+       unsigned rtpmapFmtSize = strlen(rtpmapFmt)
+ 	+ 3 /* max char len */ + fMIMESubtypeSize;
+       rtpmapLine = new char[rtpmapFmtSize];
+-      sprintf(rtpmapLine, rtpmapFmt,
++      snprintf(rtpmapLine, rtpmapFmtSize, rtpmapFmt,
+ 	      fDesiredAudioRTPPayloadFormat, fMIMESubtype);
+       rtpmapLineSize = strlen(rtpmapLine);
+     } else {
+@@ -243,7 +243,7 @@
+       + rtpmapLineSize;
+     delete[] fInviteSDPDescription;
+     fInviteSDPDescription = new char[inviteSDPFmtSize];
+-    sprintf(fInviteSDPDescription, inviteSDPFmt,
++    snprintf(fInviteSDPDescription, inviteSDPFmtSize, inviteSDPFmt,
+ 	    fCallId, fCSeq, fOurAddressStr,
+ 	    fApplicationName,
+ 	    fOurAddressStr,
+@@ -279,7 +279,7 @@
+       + 20
+       + inviteSDPSize;
+     delete[] fInviteCmd; fInviteCmd = new char[inviteCmdSize];
+-    sprintf(fInviteCmd, cmdFmt,
++    snprintf(fInviteCmd, inviteCmdSize, cmdFmt,
+ 	    fURL,
+ 	    fUserName, fUserName, fOurAddressStr, fFromTag,
+ 	    fOurAddressStr, fOurPortNum,
+@@ -670,7 +670,7 @@
+       + 20 + fOurAddressStrSize
+       + 20;
+     cmd = new char[cmdSize];
+-    sprintf(cmd, cmdFmt,
++    snprintf(cmd, cmdSize, cmdFmt,
+ 	    fURL,
+ 	    fUserName, fUserName, fOurAddressStr, fFromTag,
+ 	    fOurAddressStr, fOurPortNum,
+@@ -712,7 +712,7 @@
+       + 20 + fOurAddressStrSize
+       + 20;
+     cmd = new char[cmdSize];
+-    sprintf(cmd, cmdFmt,
++    snprintf(cmd, cmdSize, cmdFmt,
+ 	    fURL,
+ 	    fUserName, fUserName, fOurAddressStr, fFromTag,
+ 	    fOurAddressStr, fOurPortNum,
+@@ -893,7 +893,7 @@
+       + strlen(authenticator->username()) + strlen(authenticator->realm())
+       + strlen(authenticator->nonce()) + strlen(url) + strlen(response);
+     char* authenticatorStr = new char[authBufSize];
+-    sprintf(authenticatorStr, authFmt,
++    snprintf(authenticatorStr, authBufSize, authFmt,
+ 	    authenticator->username(), authenticator->realm(),
+ 	    authenticator->nonce(), response, url);
+     authenticator->reclaimDigestResponse(response);
+diff -Naur live.step3/liveMedia/ServerMediaSession.cpp live/liveMedia/ServerMediaSession.cpp
+--- live.step3/liveMedia/ServerMediaSession.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/ServerMediaSession.cpp	2025-11-30 15:11:52.715221164 +0900
+@@ -70,8 +70,9 @@
+ 
+   char* libNamePlusVersionStr = NULL; // by default
+   if (info == NULL || description == NULL) {
+-    libNamePlusVersionStr = new char[strlen(libNameStr) + strlen(liveMediaLibraryVersionStr) + 1];
+-    sprintf(libNamePlusVersionStr, "%s%s", libNameStr, liveMediaLibraryVersionStr);
++    unsigned const libNamePlusVersionStrSize = strlen(libNameStr) + strlen(liveMediaLibraryVersionStr) + 1;
++    libNamePlusVersionStr = new char[libNamePlusVersionStrSize];
++    snprintf(libNamePlusVersionStr, libNamePlusVersionStrSize, "%s%s", libNameStr, liveMediaLibraryVersionStr);
+   }
+   fInfoSDPString = strDup(info == NULL ? libNamePlusVersionStr : info);
+   fDescriptionSDPString = strDup(description == NULL ? libNamePlusVersionStr : description);
+@@ -233,7 +234,7 @@
+       = strlen(sourceFilterFmt) + 3/*IP4 or IP6*/ + ipAddressStrSize + 1;
+ 
+     sourceFilterLine = new char[sourceFilterFmtSize];
+-    sprintf(sourceFilterLine, sourceFilterFmt,
++    snprintf(sourceFilterLine, sourceFilterFmtSize, sourceFilterFmt,
+ 	    addressFamily == AF_INET ? "IP4" : "IP6",
+ 	    ipAddressStr.val());
+   } else {
+@@ -263,7 +264,7 @@
+       rangeLine = strDup("a=range:npt=now-\r\n");
+     } else if (dur > 0.0) {
+       char buf[100];
+-      sprintf(buf, "a=range:npt=0-%.3f\r\n", dur);
++      snprintf(buf, sizeof(buf), "a=range:npt=0-%.3f\r\n", dur);
+       rangeLine = strDup(buf);
+     } else { // subsessions have differing durations, so "a=range:" lines go there
+       rangeLine = strDup("");
+@@ -372,7 +373,7 @@
+ 
+   if (fTrackId == NULL) {
+     char buf[100];
+-    sprintf(buf, "track%d", fTrackNumber);
++    snprintf(buf, sizeof(buf), "track%d", fTrackNumber);
+     fTrackId = strDup(buf);
+   }
+   return fTrackId;
+@@ -439,9 +440,9 @@
+     char buf[100];
+ 
+     if (absEnd != NULL) {
+-      sprintf(buf, "a=range:clock=%s-%s\r\n", absStart, absEnd);
++      snprintf(buf, sizeof(buf), "a=range:clock=%s-%s\r\n", absStart, absEnd);
+     } else {
+-      sprintf(buf, "a=range:clock=%s-\r\n", absStart);
++      snprintf(buf, sizeof(buf), "a=range:clock=%s-\r\n", absStart);
+     }
+     return strDup(buf);
+   }
+@@ -458,7 +459,7 @@
+     return strDup("a=range:npt=now-\r\n");
+   } else {
+     char buf[100];
+-    sprintf(buf, "a=range:npt=0-%.3f\r\n", ourDuration);
++    snprintf(buf, sizeof(buf), "a=range:npt=0-%.3f\r\n", ourDuration);
+     return strDup(buf);
+   }
+ }
+diff -Naur live.step3/liveMedia/TheoraVideoRTPSink.cpp live/liveMedia/TheoraVideoRTPSink.cpp
+--- live.step3/liveMedia/TheoraVideoRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/TheoraVideoRTPSink.cpp	2025-11-30 15:11:52.707221021 +0900
+@@ -102,7 +102,7 @@
+   // Then use this 'config' string to construct our "a=fmtp:" SDP line:
+   unsigned fmtpSDPLineMaxSize = 200 + strlen(base64PackedHeaders);// 200 => more than enough space
+   fFmtpSDPLine = new char[fmtpSDPLineMaxSize];
+-  sprintf(fFmtpSDPLine, "a=fmtp:%d sampling=%s;width=%u;height=%u;delivery-method=out_band/rtsp;configuration=%s\r\n", rtpPayloadType(), pf_to_str[pf], width, height, base64PackedHeaders);
++  snprintf(fFmtpSDPLine, 1000, "a=fmtp:%d sampling=%s;width=%u;height=%u;delivery-method=out_band/rtsp;configuration=%s\r\n", rtpPayloadType(), pf_to_str[pf], width, height, base64PackedHeaders);
+   delete[] base64PackedHeaders;
+ }
+ 
+diff -Naur live.step3/liveMedia/VorbisAudioRTPSink.cpp live/liveMedia/VorbisAudioRTPSink.cpp
+--- live.step3/liveMedia/VorbisAudioRTPSink.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/VorbisAudioRTPSink.cpp	2025-11-30 15:11:52.707221021 +0900
+@@ -111,7 +111,7 @@
+   // Then use this 'config' string to construct our "a=fmtp:" SDP line:
+   unsigned fmtpSDPLineMaxSize = 50 + strlen(base64PackedHeaders); // 50 => more than enough space
+   fFmtpSDPLine = new char[fmtpSDPLineMaxSize];
+-  sprintf(fFmtpSDPLine, "a=fmtp:%d configuration=%s\r\n", rtpPayloadType(), base64PackedHeaders);
++  snprintf(fFmtpSDPLine, 1000, "a=fmtp:%d configuration=%s\r\n", rtpPayloadType(), base64PackedHeaders);
+   delete[] base64PackedHeaders;
+ }
+ 
+diff -Naur live.step3/liveMedia/WAVAudioFileSource.cpp live/liveMedia/WAVAudioFileSource.cpp
+--- live.step3/liveMedia/WAVAudioFileSource.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/WAVAudioFileSource.cpp	2025-11-30 15:11:43.592060084 +0900
+@@ -151,7 +151,7 @@
+     fNumChannels = (unsigned char)numChannels;
+     if (fNumChannels < 1 || fNumChannels > 2) { // invalid # channels
+       char errMsg[100];
+-      sprintf(errMsg, "Bad # channels: %d", fNumChannels);
++      snprintf(errMsg, sizeof(errMsg), "Bad # channels: %d", fNumChannels);
+       env.setResultMsg(errMsg);
+       break;
+     }
+diff -Naur live.step3/liveMedia/include/FileSink.hh live/liveMedia/include/FileSink.hh
+--- live.step3/liveMedia/include/FileSink.hh	2025-11-07 05:17:38.000000000 +0900
++++ live/liveMedia/include/FileSink.hh	2025-11-30 15:11:52.707221021 +0900
+@@ -64,6 +64,7 @@
+   unsigned fBufferSize;
+   char* fPerFrameFileNamePrefix; // used if "oneFilePerFrame" is True
+   char* fPerFrameFileNameBuffer; // used if "oneFilePerFrame" is True
++  unsigned fPerFrameFileNameBufferSize; // size of fPerFrameFileNameBuffer
+   struct timeval fPrevPresentationTime;
+   unsigned fSamePresentationTimeCounter;
+ };
+diff -Naur live.step3/mediaServer/DynamicRTSPServer.cpp live/mediaServer/DynamicRTSPServer.cpp
+--- live.step3/mediaServer/DynamicRTSPServer.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/mediaServer/DynamicRTSPServer.cpp	2025-11-30 15:11:43.592060084 +0900
+@@ -192,7 +192,7 @@
+     // Use an index file name that's the same as the TS file name, except with ".tsx":
+     unsigned indexFileNameLen = strlen(fileName) + 2; // allow for trailing "x\0"
+     char* indexFileName = new char[indexFileNameLen];
+-    sprintf(indexFileName, "%sx", fileName);
++    snprintf(indexFileName, sizeof(indexFileName), "%sx", fileName);
+     NEW_SMS("MPEG Transport Stream");
+     sms->addSubsession(MPEG2TransportFileServerMediaSubsession::createNew(env, fileName, indexFileName, reuseSource));
+     delete[] indexFileName;
+diff -Naur live.step3/proxyServer/live555ProxyServer.cpp live/proxyServer/live555ProxyServer.cpp
+--- live.step3/proxyServer/live555ProxyServer.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/proxyServer/live555ProxyServer.cpp	2025-11-30 15:11:43.592060084 +0900
+@@ -214,9 +214,9 @@
+     char const* proxiedStreamURL = argv[i];
+     char streamName[30];
+     if (argc == 2) {
+-      sprintf(streamName, "%s", "proxyStream"); // there's just one stream; give it this name
++      snprintf(streamName, sizeof(streamName), "%s", "proxyStream"); // there's just one stream; give it this name
+     } else {
+-      sprintf(streamName, "proxyStream-%d", i); // there's more than one stream; distinguish them by name
++      snprintf(streamName, sizeof(streamName), "proxyStream-%d", i); // there's more than one stream; distinguish them by name
+     }
+     ServerMediaSession* sms
+       = ProxyServerMediaSession::createNew(*env, rtspServer,
+diff -Naur live.step3/testProgs/MPEG2TransportStreamIndexer.cpp live/testProgs/MPEG2TransportStreamIndexer.cpp
+--- live.step3/testProgs/MPEG2TransportStreamIndexer.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/testProgs/MPEG2TransportStreamIndexer.cpp	2025-11-30 15:11:43.592060084 +0900
+@@ -66,7 +66,7 @@
+ 
+   // The output file name is the same as the input file name, except with suffix ".tsx":
+   char* outputFileName = new char[len+2]; // allow for trailing x\0
+-  sprintf(outputFileName, "%sx", inputFileName);
++  snprintf(outputFileName, strlen(inputFileName)+2, "%sx", inputFileName);
+ 
+   // Open the output file (for writing), as a 'file sink':
+   MediaSink* output = FileSink::createNew(*env, outputFileName);
+diff -Naur live.step3/testProgs/playCommon.cpp live/testProgs/playCommon.cpp
+--- live.step3/testProgs/playCommon.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/testProgs/playCommon.cpp	2025-11-30 15:11:43.592060084 +0900
+@@ -838,7 +838,7 @@
+   if (outputQuickTimeFile || outputAVIFile) {
+     if (periodicFilenameSuffix[0] == '\0') {
+       // Normally (unless the '-P <interval-in-seconds>' option was given) we output to 'stdout':
+-      sprintf(outFileName, "stdout");
++      snprintf(outFileName, sizeof(outFileName), "stdout");
+     } else {
+       // Otherwise output to a type-specific file name, containing "periodicFilenameSuffix":
+       char const* prefix = fileNamePrefix[0] == '\0' ? "output" : fileNamePrefix;
+@@ -898,7 +898,7 @@
+       } else {
+ 	// When outputting a single medium only, we output to 'stdout
+ 	// (unless the '-P <interval-in-seconds>' option was given):
+-	sprintf(outFileName, "stdout");
++	snprintf(outFileName, sizeof(outFileName), "stdout");
+       }
+ 
+       FileSink* fileSink = NULL;
+@@ -1513,7 +1513,7 @@
+     struct timeval timeNow;
+     gettimeofday(&timeNow, NULL);
+ 	char timestampStr[100];
+-	sprintf(timestampStr, "%ld%03ld", timeNow.tv_sec, (long)(timeNow.tv_usec/1000));
++	snprintf(timestampStr, sizeof(timestampStr), "%ld%03ld", timeNow.tv_sec, (long)(timeNow.tv_usec/1000));
+     *env << (syncStreams ? "Synchronized d" : "D")
+ 		<< "ata packets have begun arriving [" << timestampStr << "]\007\n";
+     return;
+diff -Naur live.step3/testProgs/testH264VideoToHLSSegments.cpp live/testProgs/testH264VideoToHLSSegments.cpp
+--- live.step3/testProgs/testH264VideoToHLSSegments.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/testProgs/testH264VideoToHLSSegments.cpp	2025-11-30 15:11:52.715221164 +0900
+@@ -72,8 +72,9 @@
+ 			  char const* segmentFileName, double segmentDuration) {
+   if (ourM3U8Fid == NULL) {
+     // Open our ".m3u8" file for output, and write the prefix:
+-    char* ourM3U8FileName = new char[strlen(OUR_HLS_FILENAME_PREFIX) + 5/*strlen(".m3u8")*/ + 1];
+-    sprintf(ourM3U8FileName, "%s.m3u8", OUR_HLS_FILENAME_PREFIX);
++    unsigned const ourM3U8FileNameSize = strlen(OUR_HLS_FILENAME_PREFIX) + 5/*strlen(".m3u8")*/ + 1;
++    char* ourM3U8FileName = new char[ourM3U8FileNameSize];
++    snprintf(ourM3U8FileName, ourM3U8FileNameSize, "%s.m3u8", OUR_HLS_FILENAME_PREFIX);
+     ourM3U8Fid = fopen(ourM3U8FileName, "wb");
+ 
+     fprintf(ourM3U8Fid,
+diff -Naur live.step3/testProgs/testMKVSplitter.cpp live/testProgs/testMKVSplitter.cpp
+--- live.step3/testProgs/testMKVSplitter.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/testProgs/testMKVSplitter.cpp	2025-11-30 15:11:43.593060102 +0900
+@@ -81,7 +81,7 @@
+     // Create the file name from "mimeType" by replacing "/" with "-", and adding the
+     // track number at the end:
+     char* fileName = new char[strlen(mimeType) + 100/*more than enough space*/];
+-    sprintf(fileName, "%s-%d", mimeType, trackNumber);
++    snprintf(fileName, sizeof(fileName), "%s-%d", mimeType, trackNumber);
+     for (unsigned j = 0; fileName[j] != '\0'; ++j) {
+       if (fileName[j] == '/') {
+ 	fileName[j] = '-';
+diff -Naur live.step3/testProgs/testMPEG2TransportStreamTrickPlay.cpp live/testProgs/testMPEG2TransportStreamTrickPlay.cpp
+--- live.step3/testProgs/testMPEG2TransportStreamTrickPlay.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/testProgs/testMPEG2TransportStreamTrickPlay.cpp	2025-11-30 15:11:43.593060102 +0900
+@@ -74,7 +74,7 @@
+   // Check whether the corresponding index file exists.
+   // The index file name is the same as the input file name, except with suffix ".tsx":
+   char* indexFileName = new char[len+2]; // allow for trailing x\0
+-  sprintf(indexFileName, "%sx", inputFileName);
++  snprintf(indexFileName, strlen(inputFileName)+2, "%sx", inputFileName);
+   MPEG2TransportStreamIndexFile* indexFile
+     = MPEG2TransportStreamIndexFile::createNew(*env, indexFileName);
+   if (indexFile == NULL) {
+diff -Naur live.step3/testProgs/testRTSPClient.cpp live/testProgs/testRTSPClient.cpp
+--- live.step3/testProgs/testRTSPClient.cpp	2025-11-07 05:17:38.000000000 +0900
++++ live/testProgs/testRTSPClient.cpp	2025-11-30 15:11:43.593060102 +0900
+@@ -511,7 +511,7 @@
+   envir() << fSubsession.mediumName() << "/" << fSubsession.codecName() << ":\tReceived " << frameSize << " bytes";
+   if (numTruncatedBytes > 0) envir() << " (with " << numTruncatedBytes << " bytes truncated)";
+   char uSecsStr[6+1]; // used to output the 'microseconds' part of the presentation time
+-  sprintf(uSecsStr, "%06u", (unsigned)presentationTime.tv_usec);
++  snprintf(uSecsStr, sizeof(uSecsStr), "%06u", (unsigned)presentationTime.tv_usec);
+   envir() << ".\tPresentation time: " << (int)presentationTime.tv_sec << "." << uSecsStr;
+   if (fSubsession.rtpSource() != NULL && !fSubsession.rtpSource()->hasBeenSynchronizedUsingRTCP()) {
+     envir() << "!"; // mark the debugging output to indicate that this presentation time is not RTCP-synchronized
