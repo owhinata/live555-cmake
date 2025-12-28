@@ -24,12 +24,6 @@ option(BUILD_HLS_PROXY "Build live555HLSProxy executable" ON)
 option(BUILD_TEST_PROGS "Build test programs" OFF)
 
 # ============================================================================
-# Patch Options
-# ============================================================================
-
-option(APPLY_LIVE555_PATCHES "Apply warning fix patches to live555 source" ON)
-
-# ============================================================================
 # Platform-Specific Definitions
 # ============================================================================
 

@@ -1,6 +1,26 @@
 # Helper functions for creating live555 libraries and applications
 
 # ============================================================================
+# Compiler Warning Suppression
+# ============================================================================
+# live555 upstream code generates various warnings that are harmless but noisy.
+# Instead of maintaining patches, we suppress these warnings via compiler flags.
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    set(LIVE555_WARNING_FLAGS
+        -Wno-int-to-pointer-cast           # int used as hash key cast to pointer
+        -Wno-pointer-to-int-cast           # pointer cast to int for hash operations
+        -Wno-array-bounds                  # negative array index used as sentinel
+        -Wno-deprecated-array-compare      # array comparison with == operator
+        -Wno-format                        # format string type mismatches
+    )
+    if(APPLE)
+        # macOS deprecates sprintf in favor of snprintf
+        list(APPEND LIVE555_WARNING_FLAGS -Wno-deprecated-declarations)
+    endif()
+endif()
+
+# ============================================================================
 # Library Helper Functions
 # ============================================================================
 
@@ -60,6 +80,11 @@ function(live555_add_library)
     # Set compile definitions
     if(DEFINED LIVE555_COMPILE_DEFINITIONS)
         target_compile_definitions(${ARG_TARGET_NAME} PRIVATE ${LIVE555_COMPILE_DEFINITIONS})
+    endif()
+
+    # Suppress live555 upstream warnings
+    if(DEFINED LIVE555_WARNING_FLAGS)
+        target_compile_options(${ARG_TARGET_NAME} PRIVATE ${LIVE555_WARNING_FLAGS})
     endif()
 
     # Link libraries
@@ -124,6 +149,11 @@ function(live555_add_executable)
     # Set compile definitions
     if(DEFINED LIVE555_COMPILE_DEFINITIONS)
         target_compile_definitions(${ARG_TARGET_NAME} PRIVATE ${LIVE555_COMPILE_DEFINITIONS})
+    endif()
+
+    # Suppress live555 upstream warnings
+    if(DEFINED LIVE555_WARNING_FLAGS)
+        target_compile_options(${ARG_TARGET_NAME} PRIVATE ${LIVE555_WARNING_FLAGS})
     endif()
 
     # Link libraries

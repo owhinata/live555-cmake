@@ -12,7 +12,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(Options)
 
 # live555 version (controlled at top level)
-set(LIVE555_VERSION "2025.11.06")
+set(LIVE555_VERSION "2025.12.26")
 
 # Download live555 source
 include(FetchLive555)
